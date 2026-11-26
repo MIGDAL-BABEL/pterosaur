@@ -1,0 +1,13 @@
+{
+  "protocol": "pterosaur-embedded-player/v1",
+  "name": "Pterosaur",
+  "routes": {
+    "health": "/api/health",
+    "search": "/api/search",
+    "stream": "/stream/{source}/{id}"
+  },
+  "sources": [
+    { "id": "netease", "label": "网易云音乐" },
+    { "id": "bilibili", "label": "哔哩哔哩" }
+  ]
+}

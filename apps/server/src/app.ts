@@ -225,6 +225,18 @@ export function createApp({
     }),
   )
 
+  const embedOrigin = process.env.PTEROSAUR_EMBED_ORIGIN
+  if (embedOrigin?.startsWith('https://') || embedOrigin?.startsWith('http://')) {
+    app.use(
+      '/stream/*',
+      cors({
+        origin: (origin) => (origin === embedOrigin ? origin : undefined),
+        allowMethods: ['GET', 'HEAD'],
+        allowHeaders: ['Range'],
+      }),
+    )
+  }
+
   app.get('/api/health', (c) => c.json(ok({ status: 'ok', time: Date.now() })))
 
   /* ============================ 发现 / 搜索 ============================ */
