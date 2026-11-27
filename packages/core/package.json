@@ -1,0 +1,24 @@
+{
+  "name": "@pterosaur/core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./http": "./src/sources/http.ts",
+    "./netease": "./src/sources/netease.ts",
+    "./bilibili": "./src/sources/bilibili.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@pterosaur/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.4",
+    "typescript": "^5.9.3",
+    "vite-plus": "^1.4.0",
+    "vitest": "5.0.3"
+  }
+}

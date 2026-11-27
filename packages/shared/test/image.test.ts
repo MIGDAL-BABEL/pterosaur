@@ -78,12 +78,12 @@ describe('canonicalNeteaseImage', () => {
     expect(canonical).toBe(
       `https://${NETEASE_IMAGE_HOST}${BROKEN_PLAYLIST_PATH}?param=1200x1200`,
     )
-    // 不再残留任何触发 400 的组合
-    const q = new URL(canonical).searchParams
-    expect(q.getAll('imageView')).toEqual([])
-    expect(q.getAll('enlarge')).toEqual([])
-    expect(q.getAll('watermark')).toEqual([])
-    expect(q.getAll('param')).toEqual(['1200x1200'])
+    // 不再残留任何触发 400 的组合：查询串只剩 param 一个键
+    // （不借 `URL` 解析——本包须保持纯 ES，见 src/url.ts）
+    const keys = (canonical.split('?')[1] ?? '')
+      .split('&')
+      .map((pair) => pair.split('=')[0])
+    expect(keys).toEqual(['param'])
   })
 
   it('同一封面带不同水印参数串，规范化后落同一个键（缓存不碎片化）', () => {

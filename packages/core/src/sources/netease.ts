@@ -1,5 +1,3 @@
-import { createRequire } from 'node:module'
-import QRCode from 'qrcode'
 import {
   ARTIST_SEPARATOR,
   DEFAULT_AUDIO_LEVEL,
@@ -16,35 +14,45 @@ import {
 import { parseLrc } from '@pterosaur/shared/lyric'
 import { canonicalNeteaseImage, COVER_LARGE } from '@pterosaur/shared/image'
 import {
-  ensureNeteaseDeviceIdentity,
-  getCachedNeteaseDeviceIdentity,
-  invalidateNeteaseDeviceIdentity,
-  refreshNeteaseDeviceIdentity,
-  NETEASE_WEB_UA,
-} from './neteaseDevice.js'
+  encodeForm,
+  formUrlEncode,
+  joinUrl,
+  replaceQuery,
+  splitUrl,
+} from '@pterosaur/shared/url'
+import { corePorts, type NcmResponse } from '../ports.js'
 import type { SourceAdapter } from './types.js'
-import { codecName, makeQuality, sessionCookieHeader, toHttps } from './http.js'
-
-const require = createRequire(import.meta.url)
+import {
+  codecName,
+  makeQuality,
+  sessionCookieHeader,
+  setCookiesOf,
+  toHttps,
+} from './http.js'
 
 /**
- * NeteaseCloudMusicApi 以 CommonJS 导出，键名去掉前导斜杠（如 `cloudsearch`）。
- * 每个函数签名约为 `(query, cookie?) => Promise<{ status, body, cookie? }>`，
- * 但不同版本存在差异，这里用宽松的 `any` 承接并在使用处收敛。
- *
- * 返回的 `cookie` 字段是「原始 Set-Cookie 字符串数组」（如
- * `["MUSIC_U=...; Max-Age=...; Path=/;", "__csrf=...; ..."]`）。
- * 登录成功后我们把这些原样作为 `Set-Cookie` 头下发给浏览器，
+ * 网易云内容接口（搜索 / 详情 / 取流 / 歌词等）目前仍走第三方库 `NeteaseCloudMusicApi`——
+ * 经宿主的过渡端口调用（见 `ports.ts` 的 `ncmApi`），内核自身不加载任何 Node 模块。
+ * 库以 CommonJS 导出、键名即函数名，返回 `{ status, body, cookie? }`；其中 `cookie` 是
+ * 「原始 Set-Cookie 字符串数组」，登录成功后原样作为 `Set-Cookie` 头下发给浏览器，
  * 浏览器在后续请求自动回传，再透传给网易云即可维持会话。
  */
-interface NcmResponse {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  body: any
-  cookie?: string[]
-  status?: number
+function ncm(
+  name: string,
+  params: Record<string, unknown>,
+): Promise<NcmResponse> {
+  return corePorts().ncmApi.call(name, params)
 }
-type NcmFn = (query: Record<string, unknown>) => Promise<NcmResponse>
-const api = require('NeteaseCloudMusicApi') as Record<string, NcmFn>
+
+/** 设备身份端口（ADR-052）：怎么取身份是宿主的事，内核只在扫码登录时消费。 */
+const deviceIdentity = () => corePorts().neteaseDevice
+
+/**
+ * 网易云网页端 UA。登录请求与宿主取设备身份（headless 浏览器上下文）必须**完全一致**
+ * （实验验证通过的组合，见 ADR-052）；定义在内核、宿主经本模块导入，免得两处分叉。
+ */
+export const NETEASE_WEB_UA =
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36 Edg/156.0.0.0'
 
 /**
  * 从 Set-Cookie 数组中提取指定 cookie 的值。
@@ -144,15 +152,12 @@ function coverUrl(
   size: string = BASE_COVER_SIZE,
 ): string {
   if (!raw) return ''
-  const canonical = canonicalNeteaseImage(raw)
-  try {
-    const u = new URL(canonical)
-    u.searchParams.delete('param')
-    u.searchParams.set('param', size)
-    return u.href
-  } catch {
-    return ''
-  }
+  // 规范化（镜像主机 / 去处理参数）后只重设尺寸参数；解析不了即返回空串
+  const u = splitUrl(canonicalNeteaseImage(raw))
+  if (!u) return ''
+  return joinUrl(u, {
+    rest: replaceQuery(u.rest, `param=${formUrlEncode(size)}`),
+  })
 }
 
 /** 由 fee 推断版权标记。网易云：0 免费、1/4/8 等通常为 VIP 或付费。 */
@@ -276,7 +281,7 @@ export async function searchSongs(
   cookie?: string,
   page = 1,
 ): Promise<Track[]> {
-  const res = await api.cloudsearch({
+  const res = await ncm('cloudsearch', {
     keywords,
     limit,
     offset: offsetOf(page, limit),
@@ -293,7 +298,7 @@ export async function searchArtists(
   cookie?: string,
   page = 1,
 ): Promise<Artist[]> {
-  const res = await api.cloudsearch({
+  const res = await ncm('cloudsearch', {
     keywords,
     type: 100,
     limit,
@@ -311,7 +316,7 @@ export async function searchAlbums(
   cookie?: string,
   page = 1,
 ): Promise<Album[]> {
-  const res = await api.cloudsearch({
+  const res = await ncm('cloudsearch', {
     keywords,
     type: 10,
     limit,
@@ -329,7 +334,7 @@ export async function searchPlaylists(
   cookie?: string,
   page = 1,
 ): Promise<Playlist[]> {
-  const res = await api.cloudsearch({
+  const res = await ncm('cloudsearch', {
     keywords,
     type: 1000,
     limit,
@@ -345,14 +350,14 @@ export async function recommendPlaylists(
   limit = 12,
   cookie?: string,
 ): Promise<Playlist[]> {
-  const res = await api.personalized({ limit, cookie })
+  const res = await ncm('personalized', { limit, cookie })
   const list: RawPlaylist[] = res?.body?.result ?? []
   return list.map(normalizePlaylist)
 }
 
 /** 排行榜列表。 */
 export async function toplists(): Promise<Playlist[]> {
-  const res = await api.toplist({})
+  const res = await ncm('toplist', {})
   const list: RawPlaylist[] = res?.body?.list ?? []
   return list.map((raw) => ({
     ...normalizePlaylist(raw),
@@ -374,7 +379,7 @@ const HOT_PLAYLIST_ID = '3778678'
  * 曲目结构与歌单详情相同（标准 `RawSong`），复用同一套归一化。
  */
 export async function hotSongs(limit = 24): Promise<Track[]> {
-  const res = await api.playlist_detail({ id: HOT_PLAYLIST_ID, s: 8 })
+  const res = await ncm('playlist_detail', { id: HOT_PLAYLIST_ID, s: 8 })
   const list: RawSong[] = res?.body?.playlist?.tracks ?? []
   return list
     .filter((s) => !!s && s.id != null)
@@ -393,7 +398,7 @@ export async function topPlaylists(
   cat = '全部',
   page = 1,
 ): Promise<Playlist[]> {
-  const res = await api.top_playlist({
+  const res = await ncm('top_playlist', {
     limit,
     cat,
     offset: offsetOf(page, limit),
@@ -409,7 +414,7 @@ export async function topPlaylists(
  * 少数条目 `song` 缺失，直接跳过（没有 `id` 就无法播放）。
  */
 export async function newSongs(limit = 20, cookie?: string): Promise<Track[]> {
-  const res = await api.personalized_newsong({ limit, cookie })
+  const res = await ncm('personalized_newsong', { limit, cookie })
   const list: { song?: RawSong }[] = res?.body?.result ?? []
   return list
     .map((it) => it.song)
@@ -425,7 +430,7 @@ export async function newSongs(limit = 20, cookie?: string): Promise<Track[]> {
  * 本应用里取到歌单的标签（`topPlaylists(cat)` 接受的就是标签名）。
  */
 export async function playlistCategories(): Promise<PlaylistCategoryGroup[]> {
-  const res = await api.playlist_catlist({})
+  const res = await ncm('playlist_catlist', {})
   const body = res?.body as
     | {
         categories?: Record<string, string>
@@ -443,7 +448,7 @@ export async function playlistCategories(): Promise<PlaylistCategoryGroup[]> {
 }
 /** 「本周新发行」：最近发布的专辑（`album_newest`，上游固定回 12 条）。 */
 export async function newAlbums(limit = 12): Promise<Album[]> {
-  const res = await api.album_newest({})
+  const res = await ncm('album_newest', {})
   const list: RawAlbum[] = res?.body?.albums ?? []
   return list.slice(0, limit).map(normalizeAlbum)
 }
@@ -453,7 +458,7 @@ export async function playlistTracks(
   id: string,
   cookie?: string,
 ): Promise<{ playlist: Playlist; tracks: Track[] }> {
-  const res = await api.playlist_detail({ id, cookie })
+  const res = await ncm('playlist_detail', { id, cookie })
   const pl = res?.body?.playlist
   const playlist: Playlist = pl
     ? {
@@ -525,7 +530,7 @@ async function fetchArtistAlbums(
   cookie?: string,
 ): Promise<RawAlbum[]> {
   const all = await collectAlbumPages(async (offset) => {
-    const res = await api.artist_album({
+    const res = await ncm('artist_album', {
       id,
       limit: ARTIST_ALBUM_PAGE,
       offset,
@@ -553,7 +558,7 @@ export async function artistDetail(
   cookie?: string,
 ): Promise<{ artist: Artist; tracks: Track[]; albums: Album[] }> {
   const [info, rawAlbums] = await Promise.all([
-    api.artists({ id, cookie }),
+    ncm('artists', { id, cookie }),
     fetchArtistAlbums(id, cookie),
   ])
   const artist = normalizeArtist(
@@ -570,7 +575,7 @@ export async function albumDetail(
   id: string,
   cookie?: string,
 ): Promise<{ album: Album; tracks: Track[] }> {
-  const res = await api.album({ id, cookie })
+  const res = await ncm('album', { id, cookie })
   const raw = (res?.body?.album ?? { id, name: '未知专辑' }) as RawAlbum & {
     size?: number
   }
@@ -617,7 +622,7 @@ async function resolveAudio(
   level: AudioLevel,
 ): Promise<ResolvedAudio> {
   try {
-    const res = await api.song_url_v1({ id, level, cookie })
+    const res = await ncm('song_url_v1', { id, level, cookie })
     const d = res?.body?.data?.[0]
     if (!d?.url) return {}
     return {
@@ -653,7 +658,7 @@ export async function songDetail(
   ids: string[],
   cookie?: string,
 ): Promise<Track[]> {
-  const res = await api.song_detail({ ids: ids.join(','), cookie })
+  const res = await ncm('song_detail', { ids: ids.join(','), cookie })
   const songs: RawSong[] = res?.body?.songs ?? []
   return songs.map(normalizeTrack)
 }
@@ -661,7 +666,7 @@ export async function songDetail(
 /** 获取歌词（含翻译）。 */
 export async function getLyric(id: string, cookie?: string): Promise<Lyric> {
   try {
-    const res = await api.lyric_new({ id, cookie })
+    const res = await ncm('lyric_new', { id, cookie })
     const lrc: string = res?.body?.lrc?.lyric ?? ''
     const tlyric: string | undefined = res?.body?.tlyric?.lyric
     return parseLrc(lrc, tlyric)
@@ -699,10 +704,10 @@ async function postNeteaseApi(
     ...extraHeaders,
   }
   if (cred) headers.Cookie = cred
-  const res = await fetch(NETEASE_API_ORIGIN + path, {
+  const res = await corePorts().http.fetch(NETEASE_API_ORIGIN + path, {
     method: 'POST',
     headers,
-    body: new URLSearchParams(body).toString(),
+    body: encodeForm(body),
   })
   const text = await res.text()
   let data: Record<string, unknown> = {}
@@ -711,7 +716,7 @@ async function postNeteaseApi(
   } catch {
     data = {}
   }
-  return { data, cookies: res.headers.getSetCookie() }
+  return { data, cookies: setCookiesOf(res) }
 }
 
 /**
@@ -732,7 +737,7 @@ function chainIdOf(key: string): string {
   const hit = qrChainIds.get(key)
   if (hit) return hit.chainId
   const sDeviceId =
-    getCachedNeteaseDeviceIdentity()?.sDeviceId ??
+    deviceIdentity().getCached()?.sDeviceId ??
     `unknown-${Math.floor(Math.random() * 1e6)}`
   const chainId = `v1_${sDeviceId}_web_login_${now}`
   qrChainIds.set(key, { chainId, at: now })
@@ -744,7 +749,7 @@ function chainIdOf(key: string): string {
  * 可空）合并为一个 Cookie 头值。键位几乎不相交（WM_* vs MUSIC_U），直接拼接即可。
  */
 function withDeviceCookies(cred?: string): string | undefined {
-  const device = getCachedNeteaseDeviceIdentity()
+  const device = deviceIdentity().getCached()
   if (!device?.cookieHeader) return cred
   if (!cred) return device.cookieHeader
   return `${device.cookieHeader}; ${cred}`
@@ -755,7 +760,7 @@ export async function qrKey(cookie?: string): Promise<string> {
   // 等设备身份就绪（服务启动已有预热，通常瞬时；首次最多等 6s）：
   // 一来 unikey 请求带上 WM cookie，二来 chainId 能用真实 sDeviceId——
   // 没有设备身份（token）时手机确认后会命中 8821 设备风控（见 neteaseDevice.ts）。
-  await ensureNeteaseDeviceIdentity(6_000)
+  await deviceIdentity().ensure(6_000)
   const { data } = await postNeteaseApi(
     '/api/login/qrcode/unikey',
     { type: '1' },
@@ -775,20 +780,20 @@ export async function qrLoginUrl(
   key: string,
   _cookie?: string,
 ): Promise<string> {
-  const params = new URLSearchParams({
+  const query = encodeForm({
     codekey: key,
     chainId: chainIdOf(key),
     hdw_device: 'web',
     hdw_appid: 'web',
     hitExp: '1',
   })
-  return `${NETEASE_API_ORIGIN}/st/platform/scanlogin?${params.toString()}`
+  return `${NETEASE_API_ORIGIN}/st/platform/scanlogin?${query}`
 }
 
 /** 生成二维码图片（base64 data URI）。二维码内容即 {@link qrLoginUrl}。 */
 export async function qrCreate(key: string, cookie?: string): Promise<string> {
   const url = await qrLoginUrl(key, cookie)
-  return QRCode.toDataURL(url)
+  return corePorts().qrcode.toDataUrl(url)
 }
 
 /**
@@ -802,7 +807,7 @@ export async function qrCheck(
   // 设备身份（ydDeviceToken + WM cookie）——不带 token 时手机确认后会被 8821 拦截。
   // 首次登录的预热若尚未完成，这里先降级为空发出去（801/802 阶段上游不校验 token），
   // 下一次轮询（前端每秒一次）缓存就绪后自然带上。
-  const device = getCachedNeteaseDeviceIdentity()
+  const device = deviceIdentity().getCached()
   const { data, cookies } = await postNeteaseApi(
     '/api/login/qrcode/client/login',
     {
@@ -818,8 +823,8 @@ export async function qrCheck(
   const code = typeof data.code === 'number' ? data.code : 800
   if (code === 8821) {
     // 设备风控拦截：token 失效或被判风险。作废并后台重取，用户重开弹窗再扫即用新身份。
-    invalidateNeteaseDeviceIdentity()
-    refreshNeteaseDeviceIdentity()
+    deviceIdentity().invalidate()
+    deviceIdentity().refresh()
   }
   if (code === 803 || code === 800) qrChainIds.delete(key)
   return {
@@ -860,7 +865,7 @@ export function parseUserCookie(raw: string): string {
 export async function loginStatus(cookie?: string): Promise<LoginStatus> {
   if (!cookie) return { logged: false }
   try {
-    const res = await api.login_status({ cookie })
+    const res = await ncm('login_status', { cookie })
     const profile = res?.body?.data?.profile
     if (!profile) return { logged: false }
     return {
@@ -882,7 +887,7 @@ export async function userPlaylists(
   uid: string,
   cookie?: string,
 ): Promise<Playlist[]> {
-  const res = await api.user_playlist({ uid, cookie })
+  const res = await ncm('user_playlist', { uid, cookie })
   const list: RawPlaylist[] = res?.body?.playlist ?? []
   return list.map(normalizePlaylist)
 }

@@ -13,8 +13,9 @@
  */
 import QRCode from 'qrcode'
 import type { MusicSource } from '@pterosaur/shared/types'
-import { adapterOf } from '../sources/index.js'
-import type { SourceAdapter } from '../sources/index.js'
+import { adapterOf } from '@pterosaur/core'
+import type { SourceAdapter } from '@pterosaur/core'
+import { configureCore, nodeCoreHost } from '../sources/host.js'
 import { ENV_PATH, upsertEnv } from '../env.js'
 
 const TIMEOUT_MS = 5 * 60 * 1000
@@ -157,6 +158,8 @@ async function main(): Promise<void> {
     return
   }
   flavor = f
+  // 协议内核经宿主端口访问运行环境（取 key / 轮询要用网络与设备身份）。
+  configureCore(nodeCoreHost())
   console.log(
     `\n[pterosaur] 扫码登录缺省账号（${f.source}，供未登录访客解锁受限能力）`,
   )

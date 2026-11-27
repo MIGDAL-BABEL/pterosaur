@@ -11,8 +11,8 @@ import {
   type AudioQuality,
   type MusicSource,
 } from '@pterosaur/shared/types'
-import { adapterOf } from './sources/index.js'
-import type { SourceAdapter } from './sources/types.js'
+import { adapterOf } from '@pterosaur/core'
+import type { SourceAdapter } from '@pterosaur/core'
 
 /** 统一成功响应。 */
 export function ok<T>(data: T): ApiResult<T> {

@@ -22,8 +22,6 @@
  *   CC 一致，登录或服务端缺省凭证（`BILIBILI_COOKIE`）后可见（含 AI 字幕）。
  *   双语模式（原文为主、中文为译；AI 轨正确归类、人工优先）与实证采样见 ADR-035。
  */
-import { createHash } from 'node:crypto'
-import QRCode from 'qrcode'
 import {
   DEFAULT_AUDIO_LEVEL,
   type Album,
@@ -35,8 +33,10 @@ import {
   type Playlist,
   type Track,
 } from '@pterosaur/shared/types'
+import { joinUrl, queryValues, splitUrl } from '@pterosaur/shared/url'
+import { corePorts } from '../ports.js'
 import type { QrCheckResult, SourceAdapter } from './types.js'
-import { cacheKey, cacheOf, DATA_CACHE_TTL_MS } from '../http.js'
+import { DATA_CACHE_TTL_MS, cacheKey, createTtlCache } from './cache.js'
 import {
   BROWSER_UA,
   businessError,
@@ -44,6 +44,7 @@ import {
   parseSampleRate,
   probeFirstCandidate,
   sessionCookieHeader,
+  setCookiesOf,
   upstreamJson,
 } from './http.js'
 
@@ -170,15 +171,16 @@ export function parseDuration(d?: string): number {
 /** 封面/头像 URL：补 `https:` 并把 i0–iN 镜像主机规范化到固定主机。 */
 export function canonicalBiliImage(url: string | undefined): string {
   if (!url) return ''
+  // 纯 ES 的 URL 工具（shared/url.ts）：内核不依赖 WHATWG URL（ADR-067）
   const abs = url.startsWith('//') ? `https:${url}` : url
-  try {
-    const u = new URL(abs)
-    u.protocol = 'https:'
-    if (/^i\d+\.hdslb\.com$/.test(u.hostname)) u.hostname = BILI_IMAGE_HOST
-    return u.href
-  } catch {
-    return ''
-  }
+  const u = splitUrl(abs)
+  if (!u) return ''
+  return joinUrl(u, {
+    protocol: 'https:',
+    ...(/^i\d+\.hdslb\.com$/.test(u.hostname)
+      ? { hostname: BILI_IMAGE_HOST }
+      : {}),
+  })
 }
 
 /** 把 B 站视频条目归一化为共享 `Track`（`id` = bvid）。 */
@@ -202,7 +204,7 @@ interface SearchAllData {
 }
 
 /** 视频搜索结果的源内缓存（短期：搜索结果本身随上游实时变化）。 */
-const searchCache = cacheOf<RawVideo[]>(200, 5 * 60_000)
+const searchCache = createTtlCache<RawVideo[]>(200, 5 * 60_000)
 
 /** 清空 B 站源内缓存（单测用：模块级单例会跨用例污染；生产无调用方）。 */
 export function _resetBilibiliCachesForTest(): void {
@@ -315,12 +317,9 @@ export function pickAudio(
  */
 export function rankAudioUrls(urls: string[]): string[] {
   const score = (u: string): number => {
-    let h: string
-    try {
-      h = new URL(u).hostname.toLowerCase()
-    } catch {
-      return 2
-    }
+    const parts = splitUrl(u)
+    if (!parts) return 2
+    const h = parts.hostname.toLowerCase()
     if (/(^|\.)mcdn\.bilivideo\.cn$/.test(h)) return 3 // P2P 边缘：最不稳，殿后
     if (h.endsWith('.bilivideo.com')) return 0 // 官方 upos 主 CDN：首选
     if (h.endsWith('.bilivideo.cn')) return 1 // 官方直连（非 mcdn）
@@ -407,7 +406,7 @@ function codecName(a: BiliAudio): string | undefined {
 }
 
 /** 采样率探测缓存（`曲目id|音频流id` → Hz），避免每次展示音质都回源头。 */
-const sampleRateCache = cacheOf<number>(500, 0)
+const sampleRateCache = createTtlCache<number>(500, 0)
 
 /**
  * 拉取音频直链头部（Range 前缀），解析 init segment 得采样率（Hz）。
@@ -556,7 +555,7 @@ function cassetteFromVideo(v: RawVideo): Playlist {
  * 有这层 memo，同凭证下每个 bvid 至多打一次上游（`playlistTracks` / `parts` / `searchCassettes`
  * 共用）。键含凭证指纹：不同账号的 `view`（封面 / 简介等）不串数据（对齐 ADR-042）。
  */
-const viewCache = cacheOf<BiliViewData>(200, DATA_CACHE_TTL_MS)
+const viewCache = createTtlCache<BiliViewData>(200, DATA_CACHE_TTL_MS)
 
 /**
  * 取一个视频的 `view` 数据（标题 / 封面 / UP 主 / `pages[]` / 简介 / 统计），带 {@link viewCache}。
@@ -900,9 +899,7 @@ export function signWbi(
     ...pairs.map(([k, v]) => `${wbiEncode(k)}=${wbiEncode(v)}`),
     `wts=${wts}`,
   ].join('&')
-  const wRid = createHash('md5')
-    .update(query + key)
-    .digest('hex')
+  const wRid = corePorts().crypto.md5(query + key)
   return `${query}&w_rid=${wRid}`
 }
 
@@ -975,7 +972,7 @@ async function fetchSubtitleLines(
     ? `https:${url}`
     : url.replace(/^http:/, 'https:')
   try {
-    const res = await fetch(abs, {
+    const res = await corePorts().http.fetch(abs, {
       headers: {
         'User-Agent': UA,
         Referer: REFERER,
@@ -1052,7 +1049,7 @@ export async function qrKey(): Promise<string> {
  * `object-fit: contain`，留白完全来自图片本身——取 1 会让码几乎填满整框、又大又挤，故用 4。
  */
 export async function qrCreate(key: string): Promise<string> {
-  return QRCode.toDataURL(key, { margin: 4, width: 240 })
+  return corePorts().qrcode.toDataUrl(key, { margin: 4, width: 240 })
 }
 
 /** 二维码内容（登录 URL）——供 CLI 终端渲染。 */
@@ -1111,13 +1108,12 @@ export function collectLoginCookies(
  * `0`→803 成功、`86090`→802 已扫码待确认、`86038`→800 已失效、其它（`86101` 未扫码）→801。
  */
 export async function qrCheck(key: string): Promise<QrCheckResult> {
-  let qrcodeKey = key
-  try {
-    qrcodeKey = new URL(key).searchParams.get('qrcode_key') ?? key
-  } catch {
-    /* key 本身可能就是 qrcode_key */
-  }
-  const res = await fetch(
+  // key 可能是一整条登录 URL：取其中的 `qrcode_key`，否则视为 key 本身
+  const loginUrl = splitUrl(key)
+  const qrcodeKey = loginUrl
+    ? (queryValues(loginUrl.rest, 'qrcode_key')[0] ?? key)
+    : key
+  const res = await corePorts().http.fetch(
     `https://passport.bilibili.com/x/passport-login/web/qrcode/poll?qrcode_key=${encodeURIComponent(
       qrcodeKey,
     )}`,
@@ -1132,10 +1128,7 @@ export async function qrCheck(key: string): Promise<QrCheckResult> {
   const message = json.data?.message
 
   if (inner === 0) {
-    const cookies = collectLoginCookies(
-      res.headers.getSetCookie?.() ?? [],
-      json.data?.url,
-    )
+    const cookies = collectLoginCookies(setCookiesOf(res), json.data?.url)
     return { code: 803, cookies, message: message ?? '登录成功' }
   }
   const code = inner === 86090 ? 802 : inner === 86038 ? 800 : 801

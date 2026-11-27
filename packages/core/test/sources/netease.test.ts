@@ -10,6 +10,8 @@ import {
   qrCreate,
   parseUserCookie,
 } from '../../src/sources/netease.js'
+import { configureCore } from '../../src/ports.js'
+import { nodeTestPorts } from '../helpers/ports.js'
 import { NETEASE_IMAGE_HOST } from '@pterosaur/shared/image'
 
 describe('normalizeTrack', () => {
@@ -229,24 +231,25 @@ const device = vi.hoisted(() => {
   } = { identity: null, refreshed: 0, invalidated: 0 }
   return state
 })
-vi.mock('../../src/sources/neteaseDevice.js', async (importOriginal) => {
-  const orig =
-    await importOriginal<typeof import('../../src/sources/neteaseDevice.js')>()
-  return {
-    ...orig,
-    ensureNeteaseDeviceIdentity: async () =>
-      device.identity ?? { token: '', cookieHeader: '' },
-    getCachedNeteaseDeviceIdentity: () => device.identity,
-    invalidateNeteaseDeviceIdentity: () => {
+/** 二维码渲染是宿主能力：换成 spy，断言内核交给端口的文本。 */
+const qrToDataUrl = vi.fn(async () => 'data:image/png;base64,VEVTVA==')
+
+// 设备身份经宿主端口注入（ADR-067）：给一份可编程的 fake，只验证内核对它的编排。
+configureCore({
+  ...nodeTestPorts(),
+  qrcode: { toDataUrl: qrToDataUrl },
+  neteaseDevice: {
+    ensure: async () => device.identity ?? { token: '', cookieHeader: '' },
+    getCached: () => device.identity,
+    invalidate: () => {
       device.identity = null
       device.invalidated++
     },
-    refreshNeteaseDeviceIdentity: () => {
+    refresh: () => {
       device.refreshed++
     },
-  }
+  },
 })
-
 /**
  * 扫码登录走现行网页协议（明文 `/api/login/qrcode/*` + `type=1` + `st/platform/scanlogin`），
  * 不再复用库里的 `login_qr_*`（eapi + `type=3` + 旧二维码链接，2026-10 起失效）。
@@ -298,7 +301,9 @@ describe('扫码登录（现行网页协议）', () => {
     expect(chainId).toMatch(/^v1_unknown-\d+_web_login_\d+$/)
 
     const img = await qrCreate(key)
-    expect(img.startsWith('data:image/png;base64,')).toBe(true)
+    // 渲染交给宿主：只断言「交给端口的文本即上面的扫码落地页」
+    expect(qrToDataUrl).toHaveBeenLastCalledWith(url.href)
+    expect(img).toBe('data:image/png;base64,VEVTVA==')
 
     // 轮询：type=1 + noCheckToken + X-loginMethod + 同一条 chainId
     fetchMock.mockResolvedValue(respond({ code: 801, message: '等待扫码' }, []))

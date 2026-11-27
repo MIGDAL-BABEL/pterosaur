@@ -5,8 +5,8 @@ import { audioContentTypeFromUrl } from '../src/audioFetch.js'
 import {
   BILIBILI_SESSION_COOKIE_NAMES,
   bilibiliAdapter,
-} from '../src/sources/bilibili.js'
-import { neteaseAdapter } from '../src/sources/netease.js'
+} from '@pterosaur/core/bilibili'
+import { neteaseAdapter } from '@pterosaur/core/netease'
 
 const app = createApp()
 

@@ -7,7 +7,8 @@
     "./types": "./src/types.ts",
     "./lyric": "./src/lyric.ts",
     "./image": "./src/image.ts",
-    "./rip": "./src/rip.ts"
+    "./rip": "./src/rip.ts",
+    "./url": "./src/url.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit"

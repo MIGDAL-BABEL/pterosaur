@@ -1,5 +1,5 @@
-import { createHash } from 'node:crypto'
 import type { AudioQuality } from '@pterosaur/shared/types'
+import { corePorts, type HttpResponse } from '../ports.js'
 
 /** 浏览器 UA（部分上游对非浏览器 UA 较敏感）。 */
 export const BROWSER_UA =
@@ -14,12 +14,12 @@ export function toHttps(url: string): string {
 
 /**
  * 凭证指纹（`sha1` 前 12 位）：缓存键里区分匿名 / 不同账号，避免串用解析结果。
- * 与 `http.credentialKey` **同一算法**——此处独立实现是为让适配器不依赖路由层；
+ * 与 `http.credentialKey` **同一算法**——此处独立实现是为让内核不依赖路由层；
  * 两者一旦分叉，同一账号在数据缓存与源内缓存会被视为两把不同的钥匙。
  */
 export function credentialFingerprint(cred?: string): string {
   if (!cred) return 'anon'
-  return createHash('sha1').update(cred).digest('hex').slice(0, 12)
+  return corePorts().crypto.sha1(cred).slice(0, 12)
 }
 
 /** 从 Set-Cookie 数组中挑出指定名称的 cookie，收敛为可直接透传的 `Cookie` 头值。 */
@@ -36,6 +36,11 @@ export function sessionCookieHeader(
     if (names.includes(name)) parts.push(kv)
   }
   return parts.length ? parts.join('; ') : undefined
+}
+
+/** 响应里的全部 `Set-Cookie` 原始串（登录接口下发会话用）；运行环境不支持时为空数组。 */
+export function setCookiesOf(res: HttpResponse): string[] {
+  return res.headers.getSetCookie?.() ?? []
 }
 
 /* ============================ 上游请求 ============================ */
@@ -68,7 +73,10 @@ export const STREAM_EXPIRY_MARGIN_MS = 60_000
  *
  * 调用方再与自身地址缓存的 TTL 取较早者，决定实际下发给浏览器的 `max-age`。
  */
-export function upstreamExpiresAt(res: Response, now: number): number | null {
+export function upstreamExpiresAt(
+  res: HttpResponse,
+  now: number,
+): number | null {
   const cc = res.headers.get('cache-control')?.toLowerCase() ?? ''
   const directives = cc.split(',').map((s) => s.trim())
   if (directives.some((d) => d === 'no-store' || d.startsWith('no-store='))) {
@@ -117,7 +125,7 @@ export interface UpstreamOptions {
 const sleep = (ms: number): Promise<void> =>
   new Promise((resolve) => setTimeout(resolve, ms))
 
-/** `fetch` 薄封装：统一 UA / Referer / Cookie / 超时，按类别重试，失败抛 {@link UpstreamError}。 */
+/** 宿主 HTTP 端口的薄封装：统一 UA / Referer / Cookie / 超时，按类别重试，失败抛 {@link UpstreamError}。 */
 export async function upstreamFetch(
   url: string,
   init: {
@@ -126,7 +134,7 @@ export async function upstreamFetch(
     headers?: Record<string, string>
   } = {},
   options: UpstreamOptions = {},
-): Promise<Response> {
+): Promise<HttpResponse> {
   const {
     userAgent = BROWSER_UA,
     referer,
@@ -142,7 +150,7 @@ export async function upstreamFetch(
   for (let attempt = 0; attempt < attempts; attempt++) {
     if (attempt > 0) await sleep(retryDelayMs)
     try {
-      const res = await fetch(url, {
+      const res = await corePorts().http.fetch(url, {
         method: init.method,
         body: init.body,
         headers: {
@@ -152,7 +160,7 @@ export async function upstreamFetch(
           ...init.headers,
           ...headers,
         },
-        signal: AbortSignal.timeout(timeoutMs),
+        timeoutMs,
       })
       if (!res.ok) throw new UpstreamError(res.status, `HTTP ${res.status}`)
       return res
@@ -198,9 +206,9 @@ export async function probeFirstCandidate<T>(
 ): Promise<T | undefined> {
   for (const url of urls) {
     try {
-      const res = await fetch(url, {
+      const res = await corePorts().http.fetch(url, {
         headers: { ...headers, Range: `bytes=0-${PROBE_BYTES - 1}` },
-        signal: AbortSignal.timeout(timeoutMs),
+        timeoutMs,
       })
       if (!res.ok) continue
       const hit = parse(new Uint8Array(await res.arrayBuffer()))

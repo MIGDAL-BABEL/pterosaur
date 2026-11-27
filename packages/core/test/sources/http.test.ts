@@ -13,7 +13,11 @@ import {
   upstreamExpiresAt,
   upstreamJson,
 } from '../../src/sources/http.js'
+import { configureCore } from '../../src/ports.js'
+import { nodeTestPorts } from '../helpers/ports.js'
 
+// 网络 / 密码原语经宿主端口（ADR-067）：这里的 Node 实现直接调全局 fetch，用例照旧 stub 它。
+configureCore(nodeTestPorts())
 const jsonRes = (body: unknown) => ({
   ok: true,
   status: 200,

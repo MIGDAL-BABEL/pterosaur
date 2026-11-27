@@ -24,7 +24,11 @@ import {
   searchSongs,
   signWbi,
 } from '../../src/sources/bilibili.js'
+import { configureCore } from '../../src/ports.js'
+import { nodeTestPorts } from '../helpers/ports.js'
 
+// 网络 / 密码原语经宿主端口（ADR-067）：这里的 Node 实现直接调全局 fetch，用例照旧 stub 它。
+configureCore(nodeTestPorts())
 beforeEach(() => {
   // 源内缓存是模块级单例：跨用例共享会「莫名命中」，必须逐用例重置
   _resetBilibiliCachesForTest()

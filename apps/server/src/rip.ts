@@ -34,7 +34,7 @@ import {
   audioContentTypeFromUrl,
   fetchAudioCandidate,
 } from './audioFetch.js'
-import { adapterOf } from './sources/index.js'
+import { adapterOf } from '@pterosaur/core'
 import { burnDisc, isFakeBurn, probeDisc, psErrorMessage } from './imapi.js'
 import {
   ffmpegVersion,

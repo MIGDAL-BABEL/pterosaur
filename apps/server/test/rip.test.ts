@@ -3,7 +3,7 @@ import { ReadableStream as NodeWebReadableStream } from 'node:stream/web'
 import type { Track } from '@pterosaur/shared/types'
 import type { RipEvent } from '@pterosaur/shared/rip'
 import { createApp } from '../src/app.js'
-import { neteaseAdapter } from '../src/sources/netease.js'
+import { neteaseAdapter } from '@pterosaur/core/netease'
 import {
   createRipEngine,
   isAllowedCoverUrl,
