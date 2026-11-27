@@ -7,7 +7,10 @@
     ".": "./src/index.ts",
     "./http": "./src/sources/http.ts",
     "./netease": "./src/sources/netease.ts",
-    "./bilibili": "./src/sources/bilibili.ts"
+    "./bilibili": "./src/sources/bilibili.ts",
+    "./neteaseSign": "./src/sources/neteaseSign.ts",
+    "./neteaseApi": "./src/sources/neteaseApi.ts",
+    "./crypto": "./src/services/crypto.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

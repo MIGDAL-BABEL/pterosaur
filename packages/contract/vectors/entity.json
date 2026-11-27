@@ -1,0 +1,80 @@
+{
+  "schema": "pterosaur-vectors@1",
+  "vectors": [
+    {
+      "kind": "entity.keyOf",
+      "input": {
+        "source": "netease",
+        "id": "1"
+      },
+      "expected": "netease:1",
+      "source": "ADR-022；缺 source 按缺省源"
+    },
+    {
+      "kind": "entity.keyOf",
+      "input": {
+        "source": "bilibili",
+        "id": "1"
+      },
+      "expected": "bilibili:1",
+      "source": "ADR-022；缺 source 按缺省源"
+    },
+    {
+      "kind": "entity.keyOf",
+      "input": {
+        "id": "x"
+      },
+      "expected": "netease:x",
+      "source": "ADR-022；缺 source 按缺省源"
+    },
+    {
+      "kind": "entity.sourceOf",
+      "input": {
+        "source": "netease"
+      },
+      "expected": "netease",
+      "source": "ADR-022；缺 source 即缺省源"
+    },
+    {
+      "kind": "entity.sourceOf",
+      "input": {
+        "source": "bilibili"
+      },
+      "expected": "bilibili",
+      "source": "ADR-022；缺 source 即缺省源"
+    },
+    {
+      "kind": "entity.sourceOf",
+      "input": {},
+      "expected": "netease",
+      "source": "ADR-022；缺 source 即缺省源"
+    },
+    {
+      "kind": "stream.url",
+      "input": {
+        "id": "1"
+      },
+      "expected": "/stream/netease/1",
+      "source": "同源代理"
+    },
+    {
+      "kind": "stream.url",
+      "input": {
+        "id": "1",
+        "level": "exhigh"
+      },
+      "expected": "/stream/netease/1?level=exhigh",
+      "source": "同源代理"
+    },
+    {
+      "kind": "stream.url",
+      "input": {
+        "id": "abc",
+        "token": "zz",
+        "level": "lossless"
+      },
+      "expected": "/stream/netease/abc?level=lossless&t=zz",
+      "source": "同源代理"
+    }
+  ]
+}

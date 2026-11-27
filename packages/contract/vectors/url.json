@@ -1,0 +1,128 @@
+{
+  "schema": "pterosaur-vectors@1",
+  "vectors": [
+    {
+      "kind": "url.split",
+      "input": "https://p3.music.126.net/a/b.jpg",
+      "expected": {
+        "protocol": "https:",
+        "userinfo": "",
+        "hostname": "p3.music.126.net",
+        "port": "",
+        "rest": "/a/b.jpg"
+      },
+      "source": "WHATWG URL 子集"
+    },
+    {
+      "kind": "url.split",
+      "input": "http://h.x:8080/p?q=1#f",
+      "expected": {
+        "protocol": "http:",
+        "userinfo": "",
+        "hostname": "h.x",
+        "port": ":8080",
+        "rest": "/p?q=1#f"
+      },
+      "source": "WHATWG URL 子集"
+    },
+    {
+      "kind": "url.split",
+      "input": "https://USER:PW@p.x/y",
+      "expected": {
+        "protocol": "https:",
+        "userinfo": "USER:PW@",
+        "hostname": "p.x",
+        "port": "",
+        "rest": "/y"
+      },
+      "source": "WHATWG URL 子集"
+    },
+    {
+      "kind": "url.split",
+      "input": "https://p.x?param=1",
+      "expected": {
+        "protocol": "https:",
+        "userinfo": "",
+        "hostname": "p.x",
+        "port": "",
+        "rest": "/?param=1"
+      },
+      "source": "WHATWG URL 子集"
+    },
+    {
+      "kind": "url.split",
+      "input": "bad",
+      "expected": null,
+      "source": "WHATWG URL 子集"
+    },
+    {
+      "kind": "url.split",
+      "input": "//p.x/a",
+      "expected": null,
+      "source": "WHATWG URL 子集"
+    },
+    {
+      "kind": "url.join",
+      "input": {
+        "protocol": "https:",
+        "userinfo": "",
+        "hostname": "p3.music.126.net",
+        "port": "",
+        "rest": "/a/b.jpg?param=1"
+      },
+      "expected": "https://p3.music.126.net/a/b.jpg?param=1",
+      "source": "WHATWG URL 子集"
+    },
+    {
+      "kind": "url.join",
+      "input": {
+        "protocol": "http:",
+        "userinfo": "",
+        "hostname": "p.x",
+        "port": "",
+        "rest": "/p"
+      },
+      "expected": "http://p.x/p",
+      "source": "WHATWG URL 子集"
+    },
+    {
+      "kind": "url.queryValues",
+      "input": {
+        "rest": "/a.jpg?param=200y200&param=600y600",
+        "key": "param"
+      },
+      "expected": [
+        "200y200",
+        "600y600"
+      ],
+      "source": "WHATWG URL 子集"
+    },
+    {
+      "kind": "url.queryValues",
+      "input": {
+        "rest": "/a.jpg?x=1#f",
+        "key": "param"
+      },
+      "expected": [],
+      "source": "WHATWG URL 子集"
+    },
+    {
+      "kind": "url.replaceQuery",
+      "input": {
+        "rest": "/a.jpg?x=1#f",
+        "query": "param=3"
+      },
+      "expected": "/a.jpg?param=3#f",
+      "source": "WHATWG URL 子集"
+    },
+    {
+      "kind": "url.replaceQuery",
+      "input": {
+        "rest": "/a.jpg",
+        "query": "param=3"
+      },
+      "expected": "/a.jpg?param=3",
+      "source": "WHATWG URL 子集"
+    }
+  ]
+}

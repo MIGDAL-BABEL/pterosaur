@@ -46,6 +46,7 @@ Pterosaur —— 仿 Apple Music 的网页音乐播放器（React 19 + Vite 前�
 - `apps/web/` — React 19 前端：`src/` 下为 SPA 源码，`vite.config.ts` 为 Vite 构建配置。
 - `packages/shared/` — 前后端共享（`@pterosaur/shared`）：`src/types.ts` 数据模型与工具，`src/lyric.ts` LRC 歌词解析，`src/image.ts` 网易云封面 URL 规范化，`src/url.ts` URL / 表单编解码的纯 ES 工具（WHATWG `URL` 的替身），`src/rip.ts` 翻录共享定义（meta.json schema 与构建器、命名工具、音频 CD 容量判定、回环判定、直刻协议类型）。
 - `packages/core/` — 音源协议内核（`@pterosaur/core`，见 ADR-065 / ADR-067）：`src/sources/{types,netease,bilibili,index,http,cache}.ts` 适配器、注册表、上游请求与源内缓存，`src/ports.ts` 宿主端口（`configureCore` 注入），`src/index.ts` 出口。测试镜像在 `packages/core/test/**`（含引擎可移植性扫描 `portability.test.ts`）。
+- `packages/contract/` — 跨端契约（`@pterosaur/contract`，见 ADR-069）：`capabilities.json` 能力矩阵、`vectors/*.json` 算法向量、`golden/normalize.json` 归一化样例、`recordings/netease.ndjson` 脱敏录制；全部由参考实现生成（`regen:*` / `record` 脚本），生成物入库。改核心实现须同提交重新生成。
 - `apps/web/src/api/` — 前端 API 客户端（`client.ts`）。
 - `apps/web/src/store/` — Zustand 状态：`player` / `library` / `auth` / `sync` / `settings` / `ui` / `rip` / `offline`（离线保存状态）。
 - `apps/web/src/hooks/` — `useAudioEngine`（音频引擎）、`useKeyboardShortcuts`、`useTheme`、`useAsync`、`useNowPlayingPrefetch`（当前曲封面 / 歌词预载）、`usePlaylistPrefetch`（队列前后各 1 首离线预取）、`useLibrarySync`（云同步引擎挂载）、`useSourceTheme`（按源主题色）、`useAccentFromBackground`（自定义背景取色）、`useMediaQuery`（响应式门控）、`audioElement`（单例 audio 与 seek）、`useViewNavigate` / `useContentScrollRestoration` / `usePresence`。

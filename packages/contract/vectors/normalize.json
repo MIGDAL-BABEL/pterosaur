@@ -1,0 +1,98 @@
+{
+  "schema": "pterosaur-vectors@1",
+  "vectors": [
+    {
+      "kind": "netease.image.canonical",
+      "input": "https://p1.music.126.net/h==/1.jpg",
+      "expected": "https://p3.music.126.net/h==/1.jpg",
+      "source": "ADR-020 / ADR-058"
+    },
+    {
+      "kind": "netease.image.canonical",
+      "input": "http://p4.music.126.net/h==/1.jpg?param=600y600",
+      "expected": "https://p3.music.126.net/h==/1.jpg?param=600y600",
+      "source": "ADR-020 / ADR-058"
+    },
+    {
+      "kind": "netease.image.canonical",
+      "input": "https://p3.music.126.net/a.jpg?imageView=1&param=200y200&param=300y300&watermark=1",
+      "expected": "https://p3.music.126.net/a.jpg?param=300y300",
+      "source": "ADR-020 / ADR-058"
+    },
+    {
+      "kind": "netease.image.canonical",
+      "input": "https://music.126.net/a.jpg?param=1",
+      "expected": "https://music.126.net/a.jpg?param=1",
+      "source": "ADR-020 / ADR-058"
+    },
+    {
+      "kind": "netease.image.canonical",
+      "input": "https://img.example.com/a.jpg?param=1",
+      "expected": "https://img.example.com/a.jpg?param=1",
+      "source": "ADR-020 / ADR-058"
+    },
+    {
+      "kind": "netease.image.canonical",
+      "input": "not a url",
+      "expected": "not a url",
+      "source": "ADR-020 / ADR-058"
+    },
+    {
+      "kind": "netease.image.canonical",
+      "input": "https://music.126.net/a.jpg",
+      "expected": "https://music.126.net/a.jpg",
+      "source": "ADR-020 / ADR-058"
+    },
+    {
+      "kind": "netease.image.coverAt",
+      "input": {
+        "url": "https://p1.music.126.net/a.jpg?param=600y600",
+        "px": 300
+      },
+      "expected": "https://p3.music.126.net/a.jpg?param=300x300",
+      "source": "尺寸分档"
+    },
+    {
+      "kind": "netease.image.coverAt",
+      "input": {
+        "url": "http://p4.music.126.net/a.jpg",
+        "px": 1200
+      },
+      "expected": "https://p3.music.126.net/a.jpg?param=1200x1200",
+      "source": "尺寸分档"
+    },
+    {
+      "kind": "netease.image.coverAt",
+      "input": {
+        "url": "https://img.example.com/a.jpg",
+        "px": 300
+      },
+      "expected": "https://img.example.com/a.jpg",
+      "source": "尺寸分档"
+    },
+    {
+      "kind": "bilibili.image.canonical",
+      "input": "//i0.hdslb.com/a.jpg",
+      "expected": "https://i0.hdslb.com/a.jpg",
+      "source": "B 站镜像主机归一"
+    },
+    {
+      "kind": "bilibili.image.canonical",
+      "input": "http://i2.hdslb.com/a.jpg",
+      "expected": "https://i0.hdslb.com/a.jpg",
+      "source": "B 站镜像主机归一"
+    },
+    {
+      "kind": "bilibili.image.canonical",
+      "input": "https://i0.hdslb.com/a.jpg",
+      "expected": "https://i0.hdslb.com/a.jpg",
+      "source": "B 站镜像主机归一"
+    },
+    {
+      "kind": "bilibili.image.canonical",
+      "input": "https://cdn.example.com/a.jpg",
+      "expected": "https://cdn.example.com/a.jpg",
+      "source": "B 站镜像主机归一"
+    }
+  ]
+}
