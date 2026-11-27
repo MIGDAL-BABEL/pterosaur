@@ -60,11 +60,16 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: 24 }
+      # 依赖用 pnpm 装（vp install 在 CI 上曾失败：它按 lockfile 代理 pnpm，CI 无 pnpm 时退回失败）；
+      # vp 只负责 fmt / lint / test / build。
+      - uses: pnpm/action-setup@v4
+        with: { version: 12 }
       - name: Install vp
         run: |
           curl -fsSL https://vite.plus | bash
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
-      - run: vp install
+          echo "$HOME/.vite-plus/bin" >> "$GITHUB_PATH"
+      - run: pnpm install --frozen-lockfile
       - run: vp check
       - run: vp test run
       - run: pnpm --filter @pterosaur/server build
@@ -79,9 +84,11 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: 24 }
+      - uses: pnpm/action-setup@v4
+        with: { version: 12 }
       - name: Install vp
         run: curl -fsSL https://vite.plus | bash
-      - run: vp install
+      - run: pnpm install --frozen-lockfile
       # 生成器必须确定：重跑后工作区没有 diff
       - run: pnpm --filter @pterosaur/contract regen:capabilities
       - run: pnpm --filter @pterosaur/contract regen:vectors
