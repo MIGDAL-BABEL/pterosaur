@@ -61,7 +61,9 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: 24 }
       - name: Install vp
-        run: curl -fsSL https://vite.plus | bash
+        run: |
+          curl -fsSL https://vite.plus | bash
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
       - run: vp install
       - run: vp check
       - run: vp test run
@@ -101,7 +103,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: swift --version
-      - run: swift test
+      - run: |
+          set -o pipefail
+          swift test 2>&1 | tee /tmp/swift-test.log
+      - if: failure()
+        run: |
+          echo "::error::swift test 失败，最后 60 行："
+          tail -60 /tmp/swift-test.log | while IFS= read -r l; do echo "::error::$l"; done
 
   # ============================ Android / Kotlin ============================
   android:
