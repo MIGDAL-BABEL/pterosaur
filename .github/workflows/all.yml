@@ -1,0 +1,99 @@
+name: Pterosaur CI
+
+# 按路径决定跑哪些端：common 是所有端共用的步骤，其余各端只在自己或契约变更时跑。
+# 契约变更（packages/contract/**）→ 所有端收缩；docs/ 与 packages/shared、packages/core 的变更
+# 视为「协议变动」——它应该伴随契约更新，含契约的提交会自然触发全量。这里额外保护的
+# 用意是：如果某次协议变更忘了同步契约，全量测试会因向量不符而失败。
+#
+# Web 端的 build 指的是 server 打包 + web 构建 + E2E；原生端的 build 目前只有 CI 骨架，
+# 实际产物在各自 worktree 上开发后提交。
+#
+# 注意：macOS 只能在 GitHub 的 macOS runner 上构建（本机是 Windows），路径过滤保证
+# push 一次、各端自行决定是否构建。
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ============================ 公共：格式、类型检查、单元测试 ============================
+  common:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24 }
+      - run: |
+          curl -fsSL https://vite.plus | bash
+          vp install
+      - run: vp check
+      - run: vp test run
+      - run: pnpm --filter @pterosaur/server build
+      - run: pnpm --filter @pterosaur/web build
+
+  # ============================ 契约：自检 + 触发各端 ============================
+  contract:
+    runs-on: ubuntu-latest
+    if: >
+      contains(github.event.head_commit.modified, 'packages/contract/') ||
+      contains(github.event.head_commit.modified, 'packages/core/') ||
+      contains(github.event.head_commit.modified, 'packages/shared/')
+    needs: [common]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24 }
+      - run: |
+          curl -fsSL https://vite.plus | bash
+          vp install
+      - run: pnpm --filter @pterosaur/contract regen:capabilities
+      - run: pnpm --filter @pterosaur/contract regen:vectors
+      - run: pnpm --filter @pterosaur/contract regen:golden
+      # 生成后的 diff 必须为空（生成器确定且输入未变）
+      - run: git diff --exit-code -- packages/contract
+      - run: pnpm --filter @pterosaur/contract test
+
+  # ============================ macOS / Swift ============================
+  macos:
+    runs-on: macos-15
+    if: >
+      contains(github.event.head_commit.modified, 'apps/macos/') ||
+      contains(github.event.head_commit.modified, 'packages/contract/') ||
+      contains(github.event.head_commit.modified, 'packages/core/') ||
+      contains(github.event.head_commit.modified, 'packages/shared/')
+    needs: [contract]
+    defaults:
+      run:
+        working-directory: apps/macos
+    steps:
+      - uses: actions/checkout@v4
+      - run: swift test
+
+  # ============================ Android / Kotlin ============================
+  android:
+    runs-on: ubuntu-latest
+    if: >
+      contains(github.event.head_commit.modified, 'apps/android/') ||
+      contains(github.event.head_commit.modified, 'packages/contract/') ||
+      contains(github.event.head_commit.modified, 'packages/core/') ||
+      contains(github.event.head_commit.modified, 'packages/shared/')
+    needs: [contract]
+    defaults:
+      run:
+        working-directory: apps/android
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: 'temurin', java-version: '21' }
+      # 骨架阶段仓库里没有 gradle wrapper（不塞二进制 jar）；setup-gradle 提供 gradle 命令，
+      # feat/android 分支提交时再补 wrapper（./gradlew）并改回。
+      - uses: gradle/actions/setup-gradle@v4
+        with: { gradle-version: 8.11.1 }
+      - run: gradle :core:test
+      - run: gradle :app:assembleDebug

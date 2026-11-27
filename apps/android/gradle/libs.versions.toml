@@ -1,0 +1,9 @@
+# Android 端依赖版本（ADR-066）。骨架阶段只有核心工具链；Compose 与 Media3 由 feat/android 分支引入。
+[versions]
+agp = "8.7.3"
+kotlin = "2.1.0"
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
