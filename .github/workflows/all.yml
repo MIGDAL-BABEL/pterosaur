@@ -70,10 +70,20 @@ jobs:
       - name: Install dependencies
         run: |
           set -o pipefail
-          vp install 2>&1 | tee /tmp/vp-install.log
-          # vp 自带 pnpm fallback（本地即 ~/.local/vite-plus/data/fallback-bin/pnpm）
-          find "$HOME/.local/vite-plus" -name pnpm -type f 2>/dev/null | head -1 | xargs -r dirname >> "$GITHUB_PATH"
-          which pnpm || vp pnpm --version || true
+          {
+            echo "### 环境"
+            node --version; npm --version
+            echo "pnpm: $(which pnpm || echo none)"
+          } >> "$GITHUB_STEP_SUMMARY"
+          vp install > /tmp/vp-install.log 2>&1 || true
+          find "$HOME/.local/vite-plus" -name pnpm -type f -print -quit 2>/dev/null | xargs -r dirname >> "$GITHUB_PATH"
+          {
+            echo "### vp install（末尾 25 行）"
+            echo "```"
+            tail -25 /tmp/vp-install.log || true
+            echo "```"
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ ! -d node_modules ]; then echo "::error::vp install 未产生 node_modules"; exit 1; fi
       - if: failure()
         run: tail -40 /tmp/vp-install.log 2>/dev/null | while IFS= read -r l; do echo "::error::$l"; done
       - if: failure()
