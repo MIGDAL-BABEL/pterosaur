@@ -60,30 +60,25 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: 24 }
-      # vp 会根据pnpm-workspace.yaml的allowBuilds等字段预处理 workspace 配置，
-      # 再调用 pnpm install。先用 vp 自己的安装链接环（vp install），再 vp 管 fmt/lint/test。
-      # vp 的安装脚本在 GitHub Actions 里不把 binary 放进 PATH（实测 line 2: vp: command not found）。
-      # 改用 npm 全局包，binary 落在 setup-node 提供的全局 bin 目录，PATH 天然可见。
+      # npm 上的 vite-plus 只是壳（实测 `vp --version` → "Local vite-plus: Not found"），
+      # 真正的二进制由官方安装脚本下载到 $VP_HOME/bin。故：显式设 VP_HOME 安装，
+      # 并把 $VP_HOME/bin 与 fallback-bin（pnpm）写进 GITHUB_PATH。
       - name: Install vp
-        run: npm install -g vite-plus
+        run: |
+          export VP_HOME="$RUNNER_TEMP/vp"
+          curl -fsSL https://vite.plus | bash
+          echo "VP_HOME=$VP_HOME" >> "$GITHUB_ENV"
+          echo "$VP_HOME/bin" >> "$GITHUB_PATH"
+          echo "$VP_HOME/fallback-bin" >> "$GITHUB_PATH"
       - run: vp --version
       - name: Install dependencies
         run: |
           set -o pipefail
-          {
-            echo "### 环境"
-            node --version; npm --version
-            echo "pnpm: $(which pnpm || echo none)"
-          } >> "$GITHUB_STEP_SUMMARY"
-          vp install > /tmp/vp-install.log 2>&1 || true
-          find "$HOME/.local/vite-plus" -name pnpm -type f -print -quit 2>/dev/null | xargs -r dirname >> "$GITHUB_PATH"
-          {
-            echo "### vp install（末尾 25 行）"
-            echo "```"
-            tail -25 /tmp/vp-install.log || true
-            echo "```"
-          } >> "$GITHUB_STEP_SUMMARY"
-          if [ ! -d node_modules ]; then echo "::error::vp install 未产生 node_modules"; exit 1; fi
+          vp install 2>&1 | tee /tmp/vp-install.log
+          if [ ! -d node_modules ]; then
+            { echo "### vp install 失败"; echo "```"; tail -30 /tmp/vp-install.log; echo "```"; } >> "$GITHUB_STEP_SUMMARY"
+            echo "::error::vp install 未产生 node_modules"; exit 1
+          fi
       - if: failure()
         run: tail -40 /tmp/vp-install.log 2>/dev/null | while IFS= read -r l; do echo "::error::$l"; done
       - if: failure()
@@ -111,11 +106,13 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: 24 }
       - name: Install vp
-        run: npm install -g vite-plus
-      - name: Install dependencies
         run: |
-          vp install
-          find "$HOME/.local/vite-plus" -name pnpm -type f 2>/dev/null | head -1 | xargs -r dirname >> "$GITHUB_PATH"
+          export VP_HOME="$RUNNER_TEMP/vp"
+          curl -fsSL https://vite.plus | bash
+          echo "VP_HOME=$VP_HOME" >> "$GITHUB_ENV"
+          echo "$VP_HOME/bin" >> "$GITHUB_PATH"
+          echo "$VP_HOME/fallback-bin" >> "$GITHUB_PATH"
+      - run: vp install
       # 生成器必须确定：重跑后工作区没有 diff
       - run: pnpm --filter @pterosaur/contract regen:capabilities
       - run: pnpm --filter @pterosaur/contract regen:vectors
