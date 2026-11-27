@@ -74,6 +74,10 @@ jobs:
       - name: Install dependencies
         run: |
           set -o pipefail
+          # pnpm 12 的 supply-chain 校验在 CI 冷启动时会卡在 "Verifying lockfile against
+          # supply-chain policies" 并退出 1（本地有缓存，不会走到那一步）。关掉它。
+          npm config set minimum-release-age 0 2>/dev/null || true
+          export npm_config_minimum_release_age=0
           vp install 2>&1 | tee /tmp/vp-install.log
           if [ ! -d node_modules ]; then
             { echo "### vp install 失败"; echo "```"; tail -30 /tmp/vp-install.log; echo "```"; } >> "$GITHUB_STEP_SUMMARY"
@@ -112,7 +116,9 @@ jobs:
           echo "VP_HOME=$VP_HOME" >> "$GITHUB_ENV"
           echo "$VP_HOME/bin" >> "$GITHUB_PATH"
           echo "$VP_HOME/fallback-bin" >> "$GITHUB_PATH"
-      - run: vp install
+      - run: |
+          export npm_config_minimum_release_age=0
+          vp install
       # 生成器必须确定：重跑后工作区没有 diff
       - run: pnpm --filter @pterosaur/contract regen:capabilities
       - run: pnpm --filter @pterosaur/contract regen:vectors
