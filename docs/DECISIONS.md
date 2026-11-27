@@ -1193,3 +1193,74 @@
     横向改为「整列 + 露出下一列一角」——这改变了超宽屏与窄屏下的列数与卡片大小。
   - `TrackList layout="row"` 不提供表头、序号、行内喜欢 / 加到歌单（保持原紧凑行形态）。
 - 何时重新审视：若发现流之外出现需要标题头的横向分区，或需要卡片本体合并为 `kind` 派发时。
+
+## ADR-064：macOS / Android 原生客户端自带内核，不依赖自托管 server
+
+- 日期：2026-11-27
+- 状态：已采纳（决策先行，代码与目录随后续步骤落地）
+- 背景（遇到了什么问题）：现有形态是「React 前端 + Hono 后端」的 Web 应用，离开部署好的 Node 后端即不可用（ADR-001）。计划新增两个原生客户端——macOS（Swift，Liquid Glass）与 Android（Kotlin，Jetpack Compose）——并与 Web 端保持核心功能同步。原生端的数据从哪来，是首先要定的问题。
+- 考虑过的方案：
+  1. **瘦客户端**：原生端只做 UI，数据全部取自用户自托管 server 的 `/api/*` 与 `/stream/*`。后端零改动，契约即 HTTP API，协议层只存在于 server 一处。
+  2. **自带内核**：原生端在本机实现音源协议层（搜索、发现、解析播放地址、歌词、登录），不依赖 server 即可完整使用。
+  3. 原生端内嵌 Node 后端作为子进程，把 server 原样随 app 分发。
+- 决策：采用 2。原生客户端是独立应用，自托管 server 不是它的运行前提；server 的角色变为「Web 端的必需后端 + 原生端可选的云同步中枢」。
+- 为什么选这个：瘦客户端让原生应用沦为自托管 server 的壳——没有 server 就不可用，原生版本因此站不住脚。原生端没有浏览器的同源与混合内容约束，协议层在端上运行没有技术障碍：播放器带 `streamHeaders` 即可直接请求上游 https 直链。
+- 为什么不选其他：方案 1 见上；方案 3 在 Android 上没有现实可行的 Node ≥ 24 承载方式，macOS 虽可行但两端形态会分叉。
+- 后果：
+  - 「同源代理铁律」只约束 Web 端。原生端的对应铁律是**只有协议层（core）可以请求上游，UI 不得直连上游**。
+  - 登录在端上完成：二维码由原生渲染，协议层只产出内容 URL；会话 cookie 存 Keychain（macOS）或加密存储（Android）。设备身份不能沿用 playwright（ADR-052），须落地 ADR-053 的纯算法，必要时以隐藏 WebView 运行官方 SDK 兜底；自提供 Cookie（ADR-062）照旧。
+  - 资料库、离线缓存、播放队列的持久化各自原生实现，策略沿用现有 spec。`LibraryData` / `SyncEnvelope` 由此成为跨端持久契约。
+  - 云同步在原生端是可选能力：连上用户自己的 server 才启用，否则纯本地。
+  - 功能对等范围不在本决策内。翻录直刻（ADR-048，仅 Windows）与 PWA 外壳缓存天然只属于 Web 端；其余能力哪些进入原生端另行确定。
+- 何时重新审视：出现必须依托服务端的能力（如跨设备统一保管会话），或原生端需要脱离网易云 / B 站音源。
+
+## ADR-065：协议层按平台各写一份（TS / Swift / Kotlin），以契约为唯一同步机制
+
+- 日期：2026-11-27
+- 状态：已采纳（决策先行，`packages/core` 与 `packages/contract` 随后续步骤落地）
+- 背景（遇到了什么问题）：原生端自带内核（ADR-064）意味着网易云 / B 站适配器、扫码登录与设备指纹要在三个平台上都能跑。适配器层（`apps/server/src/sources/*`，约 2.9k 行）是全仓最不稳定的一段——ADR-051 / 052 / 053 / 062 三天内追着上游登录风控走，`NeteaseCloudMusicApi` 的端点也在漂移。多份实现最大的风险是**漂移**：同一个上游变化只修了一端，表现为「一端能登录、另一端不能」。
+- 考虑过的方案：
+  1. **嵌入 JS 引擎跑同一份 TS 内核**：macOS 用系统自带的 JavaScriptCore，Android 用 QuickJS / Hermes。协议层只有一份，现有测试直接复用；代价是每端一两百行桥接、JSON 边界、设备上调试 JS 较弱、Android 多一个引擎依赖。
+  2. **Rust 内核 + UniFFI**：单份实现，但约 3k 行重写、交叉编译、第四门语言；server 要么走 napi 要么保留 TS 一份。
+  3. **KMP 内核**：Android 直接使用，macOS 经 Kotlin/Native 出 framework 给 Swift。仍是两份实现（TS + Kotlin），Swift 侧要处理 ObjC 互操作。
+  4. **各平台原生实现**：TS（参考实现）、Swift、Kotlin 各一份，以契约对齐。
+- 决策：采用 4。协议层不共享代码，三份实现靠 `packages/contract` 对齐，**契约是唯一的同步机制**。
+  - `packages/contract` 的内容：
+    - 模型 schema：实体（`Track` / `Artist` / `Album` / `Playlist`）、`ApiResult` 信封、`LibraryData` / `SyncEnvelope`、SSE 的 `{ rev }`。
+    - 录制的上游请求 / 响应对：每个端点的 URL、请求头、请求体与原始响应。各端以回放服务器离线测试，并在固定随机源的前提下断言自己构造的请求与录制一致（签名摘要、密文）。
+    - 算法向量：网易云 weapi / eapi 的明文与密文对照、B 站 WBI 签名、ADR-053 指纹的常量表与期望输出、`parseLrc`、带种子的 `shuffledIndexes`。
+    - 黄金输出：上游原始 JSON 归一化为实体的结果。
+  - TS 侧是参考实现：适配器层抽为 `packages/core`，`NeteaseCloudMusicApi` 承担的 16 个接口改为自实现（协议可读、可录制），server 改为消费 `packages/core`，对外行为不变。
+  - 各端的 core 与 app 分离：core 是纯逻辑，不依赖 UI 与平台框架，契约测试可在 Windows 本机运行（Kotlin 为 JVM 模块；Swift 为 Swift Package，需开源工具链）。
+  - 铁律：上游协议的改动只发生在各端的 core 模块，且与 `packages/contract` 的更新在**同一提交**；各端测试读同一份契约，不得各自复制样例；`packages/contract/**` 变更时三端的一致性测试全部运行。
+- 为什么选这个：三端的协议层与 UI 同语言，没有桥接、没有嵌入运行时，密码原语、cookie、网络栈都按平台习惯实现。漂移由 CI 暴露，而不是在用户扫码失败时暴露。
+- 为什么不选其他：方案 1 的实现份数最少，但协议层会落在 JS 引擎里，与「协议层以各端原生语言实现」的方向不符；方案 2 的迁移成本与第四门语言不成比例；方案 3 仍是两份实现。
+- 后果：
+  - 上游每变一次要改三处。契约必须先于原生端的功能开发就位，否则漂移无从发现。
+  - 录制样例含真实上游响应，入库前须脱敏（剔除账号信息与凭证）。
+  - 跨端持久载荷（`LibraryData` / `SyncEnvelope`）的兼容规则在契约落地时另立条款。云同步是整份覆盖（ADR-038），任一端解码时丢弃未知字段再回写，都会抹掉其它端写入的字段。
+- 何时重新审视：上游变更频繁到三处同步不可维持；或新增第四个客户端（如 C++ 终端版）——届时须先决定是再写一份原生实现，还是以 QuickJS 承载 TS 内核（QuickJS 是 C 库）。
+
+## ADR-066：多端并存采用单仓库，原生端拆 core / app 两个模块
+
+- 日期：2026-11-27
+- 状态：已采纳（决策先行，目录随后续步骤落地）
+- 背景（遇到了什么问题）：新增两个与 TS 没有代码共享的原生应用（Swift / Kotlin），且协议层要三份实现、靠契约对齐（ADR-065）。仓库形态有两条路：并入现有单仓库，或各端拆库、把契约当作发布物。
+- 考虑过的方案：
+  1. **单仓库**：`apps/macos`、`apps/android` 与现有 `apps/web`、`apps/server` 并排，新增 `packages/core` 与 `packages/contract`。
+  2. **拆库**：Web 保持本仓，原生端各建一仓；契约作为版本化产物发布（npm / SwiftPM / Maven）。
+- 决策：采用 1。
+  - `apps/web`、`apps/server`：现有，不动。
+  - `apps/macos`：Swift，`core`（Swift Package）与 `app`（SwiftUI / Liquid Glass）两个模块。
+  - `apps/android`：Kotlin，`core`（JVM 模块）与 `app`（Compose）两个模块。
+  - `packages/core`：TS 参考实现（适配器、登录、规范化）。
+  - `packages/contract`：schema、录制、向量、黄金输出。
+  - `packages/shared`：现有类型。
+- 为什么选这个：单人仓库（`.git` 约 2.4MB），拆库的好处（权限隔离、独立发版节奏、多团队并行）用不上。`docs/` 的 ADR 与 spec 是三端共读的唯一事实来源，单仓库让规格、协议、契约、三端实现在同一提交内原子变更；契约由参考实现产出后直接入库，不需要发布流程；CI 只需「契约目录变更则三端一致性测试全跑」一条规则。macOS 只能在 Mac 或 CI 的 macOS runner 上构建，按路径过滤即可做到推一次、各端自行决定是否构建。
+- 为什么不选其他：拆库后契约需要发布与跨仓对版本，每改一次接口都要在多个仓库之间同步，正是 ADR-065 要极力避免的漂移。
+- 后果：
+  - pnpm 的 `apps/*` 只收录带 `package.json` 的目录，workspace 配置不变。
+  - UI 层只能在 Mac、设备或 CI 上编译；core 的契约测试在 Windows 本机即可运行（见 ADR-065）。
+  - 平台约定分别写进 `apps/macos/AGENTS.md` 与 `apps/android/AGENTS.md`，根 `AGENTS.md` 只写跨端铁律。
+  - 发版：Web / server 照旧滚动部署；原生端按路径打 tag（`macos/v…`、`android/v…`）。
+- 何时重新审视：某一端出现独立维护者，或某一端的许可证 / 可见性与其它部分不同，或原生端要脱离本仓库的契约自行演进。
