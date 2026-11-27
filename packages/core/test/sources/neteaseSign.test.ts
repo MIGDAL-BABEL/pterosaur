@@ -28,6 +28,7 @@ import {
   fromHex,
   fromUtf8,
   md5,
+  rsaKeyFromSpki,
   sha1,
   toHex,
   unbase64,
@@ -104,7 +105,22 @@ describe('weapi 签名（对拍库的构造）', () => {
 
     const lib = await libraryWeapi(payload, secret, Buffer.alloc(0))
     expect(ours.params).toBe(lib.params)
-    expect(ours.encSecKey).toMatch(/^[0-9a-f]{256}$/)
+    // encSecKey 是**裸 RSA**（无填充、无随机），同一 secret 下逐字节确定（ADR-068）
+    const rawRsa = (msg: string): string => {
+      const key = rsaKeyFromSpki(unbase64(PUBLIC_KEY_B64))
+      let m = 0n
+      for (const b of utf8(msg)) m = (m << 8n) | BigInt(b)
+      let r = 1n
+      let base = m % key.n
+      let exp = key.e
+      while (exp > 0n) {
+        if (exp & 1n) r = (r * base) % key.n
+        base = (base * base) % key.n
+        exp >>= 1n
+      }
+      return r.toString(16).padStart(256, '0')
+    }
+    expect(ours.encSecKey).toBe(rawRsa([...secret].reverse().join('')))
 
     // 反向验证：用 encSecKey 无法直接解，但可用 node 私钥不可得；改为验证 params 可被两层密钥解开
     const inner = fromUtf8(

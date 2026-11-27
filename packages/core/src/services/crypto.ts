@@ -12,6 +12,7 @@ export {
   md5,
   pbkdf2Sha256,
   rsaEncryptPkcs1,
+  rsaRaw,
   rsaKeyFromSpki,
   setUtf8Codec,
   sha1,

@@ -565,10 +565,26 @@ export function rsaEncryptPkcs1(
     em[i] = b
   }
   em.set(message, k - message.length)
+  return rsaRaw(key, em)
+}
+
+/**
+ * RSA 原始运算（不做填充）：`c = m^e mod n`，输出定长 `k` 字节。
+ *
+ * 网易云 weapi 的 `encSecKey` 就是**裸 RSA**——第三方库用 `forge` 的 `encrypt(secret, 'NONE')`，
+ * 该模式下 forge 把消息字节直接当整数求幂（不足 `k` 字节时左侧补零），并非 PKCS#1 v1.5。
+ * 迁入内核时曾按 PKCS#1 填充实现，实测上游对这类请求一律回空体（见 ADR-068）。
+ */
+export function rsaRaw(
+  key: { n: bigint; e: bigint },
+  message: Uint8Array,
+): Uint8Array {
+  const k = Math.ceil(key.n.toString(16).length / 2)
   let m = 0n
-  for (const b of em) m = (m << 8n) | BigInt(b)
-  const hex = modPow(m, key.e, key.n)
-    .toString(16)
-    .padStart(k * 2, '0')
-  return fromHex(hex)
+  for (const b of message) m = (m << 8n) | BigInt(b)
+  return fromHex(
+    modPow(m, key.e, key.n)
+      .toString(16)
+      .padStart(k * 2, '0'),
+  )
 }

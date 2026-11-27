@@ -184,3 +184,21 @@ describe('手写 UTF-8 编解码（对拍 TextEncoder / TextDecoder）', () => {
     expect(fromUtf8(utf8('😀'))).toBe('😀')
   })
 })
+
+describe('RSA 原始运算 rsaRaw（网易云 weapi 的 encSecKey 约定）', () => {
+  it('对消息字节直接求幂，左侧补零到模长（与 forge encrypt(msg, "NONE") 同语义）', async () => {
+    const { rsaRaw } = await import('../src/services/crypto.js')
+    // 用两个小素数构造一个可手算的模
+    const p = 61n
+    const q = 53n
+    const n = p * q // 3233
+    const e = 17n
+    const message = utf8('hi') // 0x68 0x69
+    const expected = 0x6869n ** e % n // 26729^17 mod 3233
+    const out = rsaRaw({ n, e }, message)
+    const got = BigInt('0x' + toHex(out))
+    expect(got).toBe(expected)
+    // 定长输出：k = ceil(n 的字节数)
+    expect(toHex(out).length).toBe(Math.ceil(n.toString(16).length / 2) * 2)
+  })
+})

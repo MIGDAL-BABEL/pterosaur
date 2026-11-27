@@ -88,13 +88,14 @@ export function setAnonymousTokenProvider(provider: () => string): void {
 function requestCookie(callerCookie: string | undefined): {
   header: Record<string, string>
   cookieObject: Record<string, string>
+  cookieHeader: string
 } {
   const cookies = callerCookie ? cookieToObject(callerCookie) : {}
   const hasUser = Boolean(cookies.MUSIC_U)
   const header: Record<string, string> = {
     osver:
       cookies.osver ?? 'Microsoft-Windows-10-Professional-build-19045-64bit',
-    deviceId: cookies.deviceId ?? '',
+    deviceId: cookies.deviceId ?? 'undefined',
     os: cookies.os ?? 'pc',
     appver: cookies.appver ?? '3.1.17.204416',
     versioncode: cookies.versioncode ?? '140',
@@ -114,7 +115,7 @@ function requestCookie(callerCookie: string | undefined): {
   // 与库的 `processCookieObject` 对齐：除 header 字段外，**Cookie 头**还带一组设备与统计字段。
   // 匿名请求缺少 `_ntes_nnid` / `NMTID` 时，上游对部分接口（歌手、专辑等）返回空体，
   // 对取流则回 `-460`（网络环境风险）。
-  const nuid = cookies._ntes_nuid ?? randomHex32()
+  const nuid = cookies._ntes_nuid ?? randomHex(32)
   const cookieObject: Record<string, string> = {
     ...cookies,
     __remember_me: 'true',
@@ -132,12 +133,17 @@ function requestCookie(callerCookie: string | undefined): {
   delete cookieObject.MUSIC_U
   delete cookieObject.MUSIC_A
   // NMTID：与库一致，每次请求换一个新的 32 位十六进制（登录相关路径除外）
-  cookieObject.NMTID = randomHex32()
+  cookieObject.NMTID = randomHex(16)
   if (cookies.MUSIC_U) cookieObject.MUSIC_U = cookies.MUSIC_U
   if (cookies.MUSIC_A) cookieObject.MUSIC_A = cookies.MUSIC_A
   else if (!hasUser) cookieObject.MUSIC_A = anonymousToken() || ''
-  if (!cookieObject.MUSIC_A) delete cookieObject.MUSIC_A
-  return { header, cookieObject }
+  if (cookieObject.MUSIC_A === undefined)
+    cookieObject.MUSIC_A = anonymousToken()
+  return {
+    header,
+    cookieObject,
+    cookieHeader: encodeCookieHeader(cookieObject),
+  }
 }
 
 /** 把键值对象编码为 Cookie 头（键与值都按 `encodeURIComponent` 编码，同库）。 */
@@ -161,7 +167,7 @@ async function request(
   data: Record<string, unknown>,
   options: { cookie?: string; crypto: Crypto },
 ): Promise<NcmResult> {
-  const { header, cookieObject } = requestCookie(options.cookie)
+  const { header, cookieHeader } = requestCookie(options.cookie)
   const payload: Record<string, unknown> = { ...data, e_r: ENCRYPT_RESPONSE }
   let url: string
   let form: Record<string, string>
@@ -183,9 +189,7 @@ async function request(
       'Content-Type': 'application/x-www-form-urlencoded',
       'User-Agent': userAgent,
       Referer: DOMAIN,
-      ...(options.crypto === 'weapi'
-        ? {}
-        : { Cookie: encodeCookieHeader(cookieObject) }),
+      Cookie: cookieHeader,
     },
     body: encodeForm(form),
     timeoutMs: 15_000,
@@ -458,11 +462,12 @@ export async function registerAnonymous(): Promise<string> {
   return ''
 }
 
-/** 32 位小写十六进制随机串（库用 CryptoJS `WordArray.random(16).toString()`）。 */
-function randomHex32(): string {
+/** 小写十六进制随机串（库用 CryptoJS `WordArray.random(n).toString()`：每个字节两位）。 */
+function randomHex(bytes: number): string {
   const hex = '0123456789abcdef'
   let out = ''
-  for (let i = 0; i < 32; i++) out += hex.charAt(Math.floor(random() * 16))
+  for (let i = 0; i < bytes * 2; i++)
+    out += hex.charAt(Math.floor(random() * 16))
   return out
 }
 

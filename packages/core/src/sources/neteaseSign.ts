@@ -21,7 +21,7 @@ import {
   fromHex,
   fromUtf8,
   md5,
-  rsaEncryptPkcs1,
+  rsaRaw,
   rsaKeyFromSpki,
   toHex,
   unbase64,
@@ -65,7 +65,7 @@ export function randomSecretKey(random: () => number): string {
 
 /**
  * weapi 加密：返回 `{ params, encSecKey }`（表单值）。
- * `random` 供会话密钥与 RSA 填充取随机数，测试注入固定源即可复现。
+ * `random` 只供会话密钥取随机数；`encSecKey` 是**裸 RSA**、无填充、无随机，测试注入固定源即可复现。
  */
 export function weapiEncrypt(
   payload: Record<string, unknown>,
@@ -75,12 +75,9 @@ export function weapiEncrypt(
   const secret = randomSecretKey(random)
   const inner = base64(aesCbcEncrypt(utf8(PRESET_KEY), utf8(IV), utf8(text)))
   const params = base64(aesCbcEncrypt(utf8(secret), utf8(IV), utf8(inner)))
+  // 裸 RSA（无填充）：上游的私有约定——第三方库用 `forge.encrypt(secret, 'NONE')`（见 ADR-068）
   const encSecKey = toHex(
-    rsaEncryptPkcs1(
-      WEAPI_PUBLIC_KEY,
-      utf8(secret.split('').reverse().join('')),
-      random,
-    ),
+    rsaRaw(WEAPI_PUBLIC_KEY, utf8(secret.split('').reverse().join(''))),
   )
   return { params, encSecKey }
 }
