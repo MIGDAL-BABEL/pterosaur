@@ -1239,7 +1239,7 @@
   - 上游每变一次要改三处。契约必须先于原生端的功能开发就位，否则漂移无从发现。
   - 录制样例含真实上游响应，入库前须脱敏（剔除账号信息与凭证）。
   - 跨端持久载荷（`LibraryData` / `SyncEnvelope`）的兼容规则在契约落地时另立条款。云同步是整份覆盖（ADR-038），任一端解码时丢弃未知字段再回写，都会抹掉其它端写入的字段。
-- 何时重新审视：上游变更频繁到三处同步不可维持；或新增第四个客户端（如 C++ 终端版）——届时须先决定是再写一份原生实现，还是以 QuickJS 承载 TS 内核（QuickJS 是 C 库）。
+- 何时重新审视：上游变更频繁到三处同步不可维持；或新增本决策未覆盖的客户端——C++ 终端版不走第四份原生实现，见 ADR-067。
 
 ## ADR-066：多端并存采用单仓库，原生端拆 core / app 两个模块
 
@@ -1264,3 +1264,25 @@
   - 平台约定分别写进 `apps/macos/AGENTS.md` 与 `apps/android/AGENTS.md`，根 `AGENTS.md` 只写跨端铁律。
   - 发版：Web / server 照旧滚动部署；原生端按路径打 tag（`macos/v…`、`android/v…`）。
 - 何时重新审视：某一端出现独立维护者，或某一端的许可证 / 可见性与其它部分不同，或原生端要脱离本仓库的契约自行演进。
+
+## ADR-067：C++ 终端版以 QuickJS 承载 TS 内核，TUI 用 OpenTUI
+
+- 日期：2026-11-27
+- 状态：已采纳（决策先行；实现排在 Web / macOS / Android 三端稳定之后）
+- 背景（遇到了什么问题）：希望另有一个 C++ 的终端（sh）版，并「借用 Claude Code 的终端绘制引擎」。前者若沿用 ADR-065 的做法，会成为第四份协议实现。后者经查证不成立：本机 Claude Code（2.1.332）的终端层是 Ink 一脉的 React 渲染器加 Yoga flexbox，整体是 TypeScript，没有原生层，许可证也是专有的，没有可以链接的库。
+- 考虑过的方案：
+  1. **内核：C++ 再写一份协议实现。**
+  2. **内核：以 QuickJS 承载 TS 内核。** `packages/core` 打成单文件，由 C++ 宿主内嵌的 QuickJS 执行；宿主以 C / C++ 实现注入端口，调用面是 JSON 进出的单个入口。
+  3. **TUI：OpenTUI。** Zig 写的原生终端引擎，MIT，提供 `opentui.h`，OpenCode 在生产环境使用。
+  4. **TUI：Yoga 加 FTXUI。** Yoga 是 Meta 的 C++ flexbox 库；依赖更普通，但差分渲染与控件要自己做。
+- 决策：内核采用 2，TUI 采用 3。
+  - `packages/core` 须保持**引擎可移植**：不直接使用 Node 或 WHATWG 的运行时 API（`fetch`、`AbortSignal`、`node:crypto`、`require`、`URLSearchParams` 等），网络、密码原语、设备身份一律经注入端口；运行环境只假定标准 ES 与 `setTimeout` / `clearTimeout`。Node 宿主（server）与 QuickJS 宿主（C++）各实现一份端口。
+  - C++ 宿主：QuickJS 执行内核单文件；TUI 经 `opentui.h` 的 C API 调用，C++ 侧自包一层绑定；构建 OpenTUI 原生库需要 Zig 0.17 工具链。
+- 为什么选这个：协议层的实现份数保持三份（ADR-065），终端版不新增。QuickJS 本身是 C 库，对 C++ 宿主只有端口实现的成本。Claude Code 的终端引擎无从链接，OpenTUI 是同类架构（flexbox 布局、只重绘变化的格子）的开源原生实现，且带 C API。
+- 为什么不选其他：第四份原生实现把上游变化的同步成本从三处推到四处；Yoga 加 FTXUI 离目标观感更远。
+- 后果：
+  - ADR-065 留下的「新增第四个客户端时须先决定」由本决策了结。
+  - 引擎可移植的要求约束 `packages/core` 的抽离方式：Node 专有的部分（playwright 取设备身份、二维码渲染等）落在宿主一侧。
+  - 终端版的上游协议改动与 Web / server 共用同一份代码，但分发物要随内核重新构建。
+  - 宿主侧的其余选型（音频输出与解码、HTTP 客户端、JSON 与密码库）不在本决策内。
+- 何时重新审视：QuickJS 的能力或性能不足以承载内核；或 OpenTUI 的 C API 变得不稳定、停止维护。
