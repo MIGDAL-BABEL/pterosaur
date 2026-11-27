@@ -76,6 +76,14 @@ jobs:
           which pnpm || vp pnpm --version || true
       - if: failure()
         run: tail -40 /tmp/vp-install.log 2>/dev/null | while IFS= read -r l; do echo "::error::$l"; done
+      - if: failure()
+        run: |
+          {
+            echo "### vp install 失败"
+            echo "```"
+            tail -30 /tmp/vp-install.log 2>/dev/null || echo "(no log)"
+            echo "```"
+          } >> "$GITHUB_STEP_SUMMARY"
       - run: vp check
       - run: vp test run
       - name: Build server
