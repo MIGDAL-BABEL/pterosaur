@@ -21,6 +21,14 @@
  */
 
 /** 规范化后固定使用的镜像主机（p1–pN 互为镜像、内容一致，任选其一）。 */
+import {
+  formUrlEncode,
+  joinUrl,
+  queryValues,
+  replaceQuery,
+  splitUrl,
+} from './url.js'
+
 export const NETEASE_IMAGE_HOST = 'p3.music.126.net'
 
 /** 是否网易云图片 CDN 镜像主机（仅 `p1`–`pN.music.126.net`，实测互为镜像；裸域行为未知，不动）。 */
@@ -37,22 +45,23 @@ function isNeteaseImageHost(hostname: string): boolean {
  *   `thumbnail` / `enlarge` / `watermark` / `type` / `image` / `dx` / `dy` 等图片处理参数
  *   （`imageView` 与有效果的 `enlarge` 并存会让 CDN 回 400，见文件头与 ADR-058）；
  * - 非网易云地址原样返回（不猜测其 CDN 行为）。
+ *
+ * 不用 WHATWG `URL`：`shared` 被协议内核依赖，须保持纯 ES（见 `url.ts` 与 ADR-067）。
  */
 export function canonicalNeteaseImage(url: string): string {
   if (!url) return url
-  let u: URL
-  try {
-    u = new URL(url)
-  } catch {
-    return url
-  }
-  if (!isNeteaseImageHost(u.hostname)) return url
-  if (u.protocol !== 'https:') u.protocol = 'https:'
-  if (u.hostname !== NETEASE_IMAGE_HOST) u.hostname = NETEASE_IMAGE_HOST
-  const params = u.searchParams.getAll('param')
-  u.search = ''
-  if (params.length > 0) u.searchParams.set('param', params[params.length - 1])
-  return u.href
+  const u = splitUrl(url)
+  if (!u || !isNeteaseImageHost(u.hostname)) return url
+  const params = queryValues(u.rest, 'param')
+  const last = params[params.length - 1]
+  return joinUrl(u, {
+    protocol: 'https:',
+    hostname: NETEASE_IMAGE_HOST,
+    rest: replaceQuery(
+      u.rest,
+      last === undefined ? '' : `param=${formUrlEncode(last)}`,
+    ),
+  })
 }
 
 /* ============================ 尺寸分档 ============================ */
@@ -81,16 +90,12 @@ export function coverAt(
   px: number,
 ): string | undefined {
   if (!url) return url
-  const size = `${px}x${px}`
-  let u: URL
-  try {
-    u = new URL(url)
-  } catch {
-    return url
-  }
-  if (!isNeteaseImageHost(u.hostname)) return url
-  const canonical = new URL(canonicalNeteaseImage(url))
-  canonical.searchParams.delete('param')
-  canonical.searchParams.set('param', size)
-  return canonical.href
+  const u = splitUrl(url)
+  if (!u || !isNeteaseImageHost(u.hostname)) return url
+  // 尺寸参数一律覆盖（原地址有没有 param 都重设），其余查询串随规范化丢弃
+  return joinUrl(u, {
+    protocol: 'https:',
+    hostname: NETEASE_IMAGE_HOST,
+    rest: replaceQuery(u.rest, `param=${formUrlEncode(`${px}x${px}`)}`),
+  })
 }

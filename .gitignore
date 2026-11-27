@@ -45,3 +45,29 @@ coverage
 # 云同步数据目录（服务端持久化，勿入库）
 .data
 .scratch/
+
+# 原生端构建产物（ADR-066：两端的骨架入库，产物不入库）
+
+# ---- macOS / Swift ----
+apps/macos/.build/
+apps/macos/.swiftpm/
+apps/macos/*.xcodeproj/xcuserdata/
+apps/macos/*.xcodeproj/project.xcworkspace/xcuserdata/
+apps/macos/DerivedData/
+*.xcuserstate
+
+# ---- Android / Gradle ----
+apps/android/.gradle/
+apps/android/build/
+apps/android/**/build/
+apps/android/local.properties
+apps/android/.kotlin/
+apps/android/captures/
+*.apk
+*.aab
+*.hprof
+
+# ---- IDE 元数据（.openidea 为本机 IDE 生成，不入库）----
+.openidea/
+.idea/
+*.iml

@@ -1,0 +1,960 @@
+{
+  "schema": "pterosaur-golden@1",
+  "cases": [
+    {
+      "id": "cloudsearch.song.0",
+      "fn": "netease.normalizeTrack",
+      "input": {
+        "no": 1,
+        "rt": "",
+        "copyright": 0,
+        "fee": 8,
+        "privilege": {
+          "flag": 1343492,
+          "code": 0,
+          "dlLevel": "none",
+          "subp": 1,
+          "fl": 320000,
+          "fee": 8,
+          "dl": 0,
+          "plLevel": "exhigh",
+          "maxBrLevel": "sky",
+          "rightSource": 0,
+          "maxbr": 320000,
+          "id": 3404293607,
+          "sp": 7,
+          "payed": 0,
+          "st": 0,
+          "chargeInfoList": [
+            {
+              "rate": 128000,
+              "chargeType": 0
+            },
+            {
+              "rate": 192000,
+              "chargeType": 0
+            },
+            {
+              "rate": 320000,
+              "chargeType": 0
+            },
+            {
+              "rate": 999000,
+              "chargeType": 1
+            }
+          ],
+          "freeTrialPrivilege": {
+            "userConsumable": false,
+            "resConsumable": false
+          },
+          "downloadMaxbr": 320000,
+          "downloadMaxBrLevel": "sky",
+          "cp": 1,
+          "preSell": false,
+          "playMaxBrLevel": "sky",
+          "cs": false,
+          "toast": false,
+          "playMaxbr": 320000,
+          "flLevel": "exhigh",
+          "pl": 320000
+        },
+        "mst": 9,
+        "pst": 0,
+        "pop": 100,
+        "dt": 218462,
+        "rtype": 0,
+        "s_id": 0,
+        "rtUrls": [],
+        "resourceState": true,
+        "id": 3404293607,
+        "st": 0,
+        "cd": "01",
+        "publishTime": 0,
+        "cf": "",
+        "originCoverType": 2,
+        "h": {
+          "br": 320000,
+          "fid": 0,
+          "size": 8740615,
+          "vd": -35859,
+          "sr": 44100
+        },
+        "mv": 0,
+        "al": {
+          "picUrl": "http://p3.music.126.net/QuGjMOW6mwqoiNOo7vwbkw==/109951173532440724.jpg",
+          "name": "稻香",
+          "tns": [],
+          "pic_str": "109951173532440724",
+          "id": 386161918,
+          "pic": 109951173532440720
+        },
+        "l": {
+          "br": 128000,
+          "fid": 0,
+          "size": 3496272,
+          "vd": -31769,
+          "sr": 44100
+        },
+        "m": {
+          "br": 192000,
+          "fid": 0,
+          "size": 5244386,
+          "vd": -33329,
+          "sr": 44100
+        },
+        "version": 5,
+        "cp": 0,
+        "alia": [],
+        "djId": 0,
+        "single": 0,
+        "ar": [
+          {
+            "name": "Lie",
+            "tns": [],
+            "alias": [],
+            "id": 123533131
+          }
+        ],
+        "ftype": 0,
+        "t": 0,
+        "v": 39,
+        "name": "稻香",
+        "mark": 17179877376
+      },
+      "expected": {
+        "source": "netease",
+        "id": "3404293607",
+        "title": "稻香",
+        "artist": "Lie",
+        "album": "稻香",
+        "cover": "https://p3.music.126.net/QuGjMOW6mwqoiNOo7vwbkw==/109951173532440724.jpg?param=1200y1200",
+        "duration": 218,
+        "fee": "vip",
+        "artistRefs": [
+          {
+            "id": "123533131",
+            "name": "Lie"
+          }
+        ],
+        "albumId": "386161918"
+      },
+      "source": "录制：cloudsearch 前 3 首"
+    },
+    {
+      "id": "cloudsearch.song.1",
+      "fn": "netease.normalizeTrack",
+      "input": {
+        "no": 1,
+        "rt": "",
+        "copyright": 0,
+        "fee": 8,
+        "privilege": {
+          "flag": 1540100,
+          "code": 0,
+          "dlLevel": "none",
+          "subp": 1,
+          "fl": 320000,
+          "fee": 8,
+          "dl": 0,
+          "plLevel": "exhigh",
+          "maxBrLevel": "jymaster",
+          "rightSource": 0,
+          "maxbr": 999000,
+          "id": 2104034295,
+          "sp": 7,
+          "payed": 0,
+          "st": 0,
+          "chargeInfoList": [
+            {
+              "rate": 128000,
+              "chargeType": 0
+            },
+            {
+              "rate": 192000,
+              "chargeType": 0
+            },
+            {
+              "rate": 320000,
+              "chargeType": 0
+            },
+            {
+              "rate": 999000,
+              "chargeType": 1
+            }
+          ],
+          "freeTrialPrivilege": {
+            "userConsumable": false,
+            "resConsumable": false
+          },
+          "downloadMaxbr": 999000,
+          "downloadMaxBrLevel": "jymaster",
+          "cp": 1,
+          "preSell": false,
+          "playMaxBrLevel": "jymaster",
+          "cs": false,
+          "toast": false,
+          "playMaxbr": 999000,
+          "flLevel": "exhigh",
+          "pl": 320000
+        },
+        "mst": 9,
+        "pst": 0,
+        "pop": 95,
+        "dt": 211707,
+        "rtype": 0,
+        "s_id": 0,
+        "rtUrls": [],
+        "resourceState": true,
+        "id": 2104034295,
+        "sq": {
+          "br": 835074,
+          "fid": 0,
+          "size": 22098985,
+          "vd": 22549,
+          "sr": 44100
+        },
+        "st": 0,
+        "cd": "01",
+        "publishTime": 0,
+        "cf": "",
+        "originCoverType": 2,
+        "h": {
+          "br": 320000,
+          "fid": 0,
+          "size": 8471031,
+          "vd": 25211,
+          "sr": 44100
+        },
+        "mv": 0,
+        "al": {
+          "picUrl": "http://p4.music.126.net/agu6hCDE9q33ZEGu6FtdCA==/109951169135343730.jpg",
+          "name": "《悬溺》+《空心》+《没有泪点》",
+          "tns": [],
+          "pic_str": "109951169135343730",
+          "id": 180325594,
+          "pic": 109951169135343730
+        },
+        "originSongSimpleData": {
+          "artists": [
+            {
+              "name": "周杰伦",
+              "id": 6452
+            }
+          ],
+          "name": "稻香",
+          "songId": 185709,
+          "albumMeta": {
+            "name": "魔杰座",
+            "id": 18877
+          }
+        },
+        "l": {
+          "br": 128000,
+          "fid": 0,
+          "size": 3388439,
+          "vd": 29204,
+          "sr": 44100
+        },
+        "m": {
+          "br": 192000,
+          "fid": 0,
+          "size": 5082636,
+          "vd": 27699,
+          "sr": 44100
+        },
+        "version": 10,
+        "cp": 0,
+        "alia": [],
+        "djId": 0,
+        "single": 0,
+        "ar": [
+          {
+            "name": "卡罗尔",
+            "tns": [],
+            "alias": [
+              "音乐制作家，作词，作曲家"
+            ],
+            "id": 59235151,
+            "alia": [
+              "音乐制作家，作词，作曲家"
+            ]
+          }
+        ],
+        "ftype": 0,
+        "t": 0,
+        "v": 44,
+        "name": "《稻香》童声",
+        "mark": 17179877376
+      },
+      "expected": {
+        "source": "netease",
+        "id": "2104034295",
+        "title": "《稻香》童声",
+        "artist": "卡罗尔",
+        "album": "《悬溺》+《空心》+《没有泪点》",
+        "cover": "https://p3.music.126.net/agu6hCDE9q33ZEGu6FtdCA==/109951169135343730.jpg?param=1200y1200",
+        "duration": 212,
+        "fee": "vip",
+        "artistRefs": [
+          {
+            "id": "59235151",
+            "name": "卡罗尔"
+          }
+        ],
+        "albumId": "180325594"
+      },
+      "source": "录制：cloudsearch 前 3 首"
+    },
+    {
+      "id": "cloudsearch.song.2",
+      "fn": "netease.normalizeTrack",
+      "input": {
+        "no": 1,
+        "rt": "",
+        "copyright": 1,
+        "fee": 8,
+        "privilege": {
+          "flag": 1540100,
+          "code": 0,
+          "dlLevel": "none",
+          "subp": 1,
+          "fl": 320000,
+          "fee": 8,
+          "dl": 0,
+          "plLevel": "exhigh",
+          "maxBrLevel": "jymaster",
+          "rightSource": 0,
+          "maxbr": 999000,
+          "id": 1947584923,
+          "sp": 7,
+          "payed": 0,
+          "st": 0,
+          "chargeInfoList": [
+            {
+              "rate": 128000,
+              "chargeType": 0
+            },
+            {
+              "rate": 192000,
+              "chargeType": 0
+            },
+            {
+              "rate": 320000,
+              "chargeType": 0
+            },
+            {
+              "rate": 999000,
+              "chargeType": 1
+            }
+          ],
+          "freeTrialPrivilege": {
+            "userConsumable": false,
+            "resConsumable": false
+          },
+          "downloadMaxbr": 999000,
+          "downloadMaxBrLevel": "jymaster",
+          "cp": 1,
+          "preSell": false,
+          "playMaxBrLevel": "jymaster",
+          "cs": false,
+          "toast": false,
+          "playMaxbr": 999000,
+          "flLevel": "exhigh",
+          "pl": 320000
+        },
+        "mst": 9,
+        "pst": 0,
+        "pop": 95,
+        "dt": 190975,
+        "rtype": 0,
+        "s_id": 0,
+        "rtUrls": [],
+        "resourceState": true,
+        "id": 1947584923,
+        "sq": {
+          "br": 1563263,
+          "fid": 0,
+          "size": 37318155,
+          "vd": -38983,
+          "sr": 44100
+        },
+        "st": 0,
+        "cd": "01",
+        "publishTime": 1652371200000,
+        "cf": "",
+        "originCoverType": 2,
+        "h": {
+          "br": 320000,
+          "fid": 0,
+          "size": 7641382,
+          "vd": -38986,
+          "sr": 44100
+        },
+        "mv": 0,
+        "al": {
+          "picUrl": "http://p4.music.126.net/LLBjRcdquxGVItzpyDAVgg==/109951170157481385.jpg",
+          "name": "稻香 (女声版)",
+          "tns": [],
+          "pic_str": "109951170157481385",
+          "id": 145001396,
+          "pic": 109951170157481390
+        },
+        "originSongSimpleData": {
+          "artists": [
+            {
+              "name": "周杰伦",
+              "id": 6452
+            }
+          ],
+          "name": "稻香",
+          "songId": 185709,
+          "albumMeta": {
+            "name": "魔杰座",
+            "id": 18877
+          }
+        },
+        "l": {
+          "br": 128000,
+          "fid": 0,
+          "size": 3056579,
+          "vd": -34703,
+          "sr": 44100
+        },
+        "m": {
+          "br": 192000,
+          "fid": 0,
+          "size": 4584847,
+          "vd": -36391,
+          "sr": 44100
+        },
+        "version": 15,
+        "cp": 1416074,
+        "alia": [],
+        "djId": 0,
+        "single": 0,
+        "ar": [
+          {
+            "name": "余不不",
+            "tns": [],
+            "alias": [],
+            "id": 49293918
+          }
+        ],
+        "ftype": 0,
+        "t": 0,
+        "v": 49,
+        "name": "稻香 (女声版)",
+        "mark": 17179877376
+      },
+      "expected": {
+        "source": "netease",
+        "id": "1947584923",
+        "title": "稻香 (女声版)",
+        "artist": "余不不",
+        "album": "稻香 (女声版)",
+        "cover": "https://p3.music.126.net/LLBjRcdquxGVItzpyDAVgg==/109951170157481385.jpg?param=1200y1200",
+        "duration": 191,
+        "fee": "vip",
+        "artistRefs": [
+          {
+            "id": "49293918",
+            "name": "余不不"
+          }
+        ],
+        "albumId": "145001396"
+      },
+      "source": "录制：cloudsearch 前 3 首"
+    },
+    {
+      "id": "cloudsearch.artist.0",
+      "fn": "netease.normalizeArtist",
+      "input": {
+        "name": "Lie",
+        "tns": [],
+        "alias": [],
+        "id": 123533131
+      },
+      "expected": {
+        "source": "netease",
+        "id": "123533131",
+        "name": "Lie",
+        "avatar": ""
+      },
+      "source": "录制：cloudsearch 歌曲的首位艺人"
+    },
+    {
+      "id": "cloudsearch.artist.1",
+      "fn": "netease.normalizeArtist",
+      "input": {
+        "name": "卡罗尔",
+        "tns": [],
+        "alias": [
+          "音乐制作家，作词，作曲家"
+        ],
+        "id": 59235151,
+        "alia": [
+          "音乐制作家，作词，作曲家"
+        ]
+      },
+      "expected": {
+        "source": "netease",
+        "id": "59235151",
+        "name": "卡罗尔",
+        "avatar": "",
+        "alias": [
+          "音乐制作家，作词，作曲家"
+        ]
+      },
+      "source": "录制：cloudsearch 歌曲的首位艺人"
+    },
+    {
+      "id": "cloudsearch.artist.2",
+      "fn": "netease.normalizeArtist",
+      "input": {
+        "name": "余不不",
+        "tns": [],
+        "alias": [],
+        "id": 49293918
+      },
+      "expected": {
+        "source": "netease",
+        "id": "49293918",
+        "name": "余不不",
+        "avatar": ""
+      },
+      "source": "录制：cloudsearch 歌曲的首位艺人"
+    },
+    {
+      "id": "albumNewest.album.0",
+      "fn": "netease.normalizeAlbum",
+      "input": {
+        "name": "Love Me Later 巡回演唱会LIVE TRACKS",
+        "id": 404764114,
+        "type": "专辑",
+        "size": 10,
+        "picId": 109951174134867740,
+        "blurPicUrl": "https://p4.music.126.net/RT7TwtwTJ8Gw-9qaltqjkw==/109951174134867745.jpg",
+        "companyId": 0,
+        "pic": 109951174134867740,
+        "picUrl": "https://p3.music.126.net/RT7TwtwTJ8Gw-9qaltqjkw==/109951174134867745.jpg",
+        "publishTime": 1792598400000,
+        "description": "",
+        "tags": "",
+        "company": "Def Jam China",
+        "briefDesc": "",
+        "artist": {
+          "name": "王以太",
+          "id": 12236125,
+          "picId": 109951166114595170,
+          "img1v1Id": 18686200114669624,
+          "briefDesc": "",
+          "picUrl": "https://p4.music.126.net/mf_zWF3REZJQU5Ge38KX_g==/109951166114595166.jpg",
+          "img1v1Url": "https://p4.music.126.net/VnZiScyynLG7atLIZ2YPkw==/18686200114669622.jpg",
+          "albumSize": 27,
+          "alias": [],
+          "trans": "",
+          "musicSize": 224,
+          "topicPerson": 0,
+          "picId_str": "109951166114595166",
+          "img1v1Id_str": "18686200114669622"
+        },
+        "songs": null,
+        "alias": [],
+        "status": 1,
+        "copyrightId": 7003,
+        "commentThreadId": "R_AL_3_404764114",
+        "artists": [
+          {
+            "name": "王以太",
+            "id": 12236125,
+            "picId": 0,
+            "img1v1Id": 18686200114669624,
+            "briefDesc": "",
+            "picUrl": "",
+            "img1v1Url": "https://p4.music.126.net/VnZiScyynLG7atLIZ2YPkw==/18686200114669622.jpg",
+            "albumSize": 0,
+            "alias": [],
+            "trans": "",
+            "musicSize": 0,
+            "topicPerson": 0,
+            "img1v1Id_str": "18686200114669622"
+          }
+        ],
+        "paid": false,
+        "onSale": false,
+        "picId_str": "109951174134867745"
+      },
+      "expected": {
+        "source": "netease",
+        "id": "404764114",
+        "name": "Love Me Later 巡回演唱会LIVE TRACKS",
+        "cover": "https://p3.music.126.net/RT7TwtwTJ8Gw-9qaltqjkw==/109951174134867745.jpg?param=1200y1200",
+        "artist": "王以太",
+        "artistId": "12236125",
+        "artistRefs": [
+          {
+            "id": "12236125",
+            "name": "王以太"
+          }
+        ],
+        "year": 2026,
+        "type": "album",
+        "trackCount": 10
+      },
+      "source": "录制：最新专辑"
+    },
+    {
+      "id": "albumNewest.album.1",
+      "fn": "netease.normalizeAlbum",
+      "input": {
+        "name": "斩鸭线",
+        "id": 404975764,
+        "type": "专辑",
+        "size": 12,
+        "picId": 109951174139932900,
+        "blurPicUrl": "https://p4.music.126.net/Eafh2qRUgw2IXXOVD4B9LQ==/109951174139932904.jpg",
+        "companyId": 0,
+        "pic": 109951174139932900,
+        "picUrl": "https://p3.music.126.net/Eafh2qRUgw2IXXOVD4B9LQ==/109951174139932904.jpg",
+        "publishTime": 1792771200000,
+        "description": "",
+        "tags": "",
+        "company": "独立发行",
+        "briefDesc": "",
+        "artist": {
+          "name": "连麻Swimming",
+          "id": 12064019,
+          "picId": 109951165303641070,
+          "img1v1Id": 18686200114669624,
+          "briefDesc": "",
+          "picUrl": "https://p4.music.126.net/QgDeFC-ZOKFugn9nmwk-CA==/109951165303641065.jpg",
+          "img1v1Url": "https://p3.music.126.net/VnZiScyynLG7atLIZ2YPkw==/18686200114669622.jpg",
+          "albumSize": 23,
+          "alias": [],
+          "trans": "",
+          "musicSize": 158,
+          "topicPerson": 0,
+          "picId_str": "109951165303641065",
+          "img1v1Id_str": "18686200114669622"
+        },
+        "songs": null,
+        "alias": [],
+        "status": 1,
+        "copyrightId": 7396311,
+        "commentThreadId": "R_AL_3_404975764",
+        "artists": [
+          {
+            "name": "连麻Swimming",
+            "id": 12064019,
+            "picId": 0,
+            "img1v1Id": 18686200114669624,
+            "briefDesc": "",
+            "picUrl": "",
+            "img1v1Url": "https://p3.music.126.net/VnZiScyynLG7atLIZ2YPkw==/18686200114669622.jpg",
+            "albumSize": 0,
+            "alias": [],
+            "trans": "",
+            "musicSize": 0,
+            "topicPerson": 0,
+            "img1v1Id_str": "18686200114669622"
+          }
+        ],
+        "paid": false,
+        "onSale": false,
+        "picId_str": "109951174139932904"
+      },
+      "expected": {
+        "source": "netease",
+        "id": "404975764",
+        "name": "斩鸭线",
+        "cover": "https://p3.music.126.net/Eafh2qRUgw2IXXOVD4B9LQ==/109951174139932904.jpg?param=1200y1200",
+        "artist": "连麻Swimming",
+        "artistId": "12064019",
+        "artistRefs": [
+          {
+            "id": "12064019",
+            "name": "连麻Swimming"
+          }
+        ],
+        "year": 2026,
+        "type": "album",
+        "trackCount": 12
+      },
+      "source": "录制：最新专辑"
+    },
+    {
+      "id": "artists.artist",
+      "fn": "netease.normalizeArtist",
+      "input": {
+        "img1v1Id": 109951169164936940,
+        "topicPerson": 0,
+        "musicSize": 591,
+        "albumSize": 49,
+        "briefDesc": "周杰伦（Jay Chou），1979年1月18日出生于台湾省新北市，祖籍福建省永春县，华语流行乐男歌手、音乐人、演员、导演，毕业于淡江中学 。\n2000年，发行个人首张音乐专辑《Jay》 ，并在华语乐坛获得广泛关注 。2001年，凭借音乐专辑《范特西》奠定其在乐坛的地位 ，并获得三座台湾金曲奖 [38]。2003年，登上美国《时代》杂志封面 ；此后，推出《叶惠美》《七里香》《11月的萧邦》《依然范特西》等商业与口碑兼具的音乐专辑 。2005年，主演个人首部电影《头文字D》 ，凭借该片获得香港电影金像奖和台湾电影金马奖“最佳新演员奖” 。2007年，成立“杰威尔音乐有限公司” ，首度自编自导并领衔主演爱情片《不能说的秘密》 。2009年起，凭借音乐专辑《魔杰座》和《跨时代》两度获得台湾金曲奖“最佳国语男歌手奖” ；之后，持续产出作品并举行巡演 。2023年，凭借音乐专辑《最伟大的作品》成为首位获得全球年度销量冠军的华语歌手 。2024年，成为首位在台北大巨蛋开唱的歌手 。2026年，发行音乐专辑《太阳之子》。\n周杰伦共获得15座台湾金曲奖，是获得该奖最多的音乐人 。他四次获得世界音乐大奖“中国区最畅销艺人奖” 、两次获得MTV亚洲大奖“最受欢迎歌手奖” ，并被美国CNN评为“25位亚洲最具影响力人物”之一 、被《Fast Company》杂志评为“全球百大创意人物”之一 。作为音乐人，他为自己的所有原唱歌曲作曲并担任制作人 ，更将R&B、嘻哈等风格的唱法与中国传统音乐融合，使得“中国风”这一名词登上流行音乐行列",
+        "picId": 109951169164936450,
+        "picUrl": "https://p4.music.126.net/NWv6PtSBkyWZzqbJVzBr7g==/109951169164936450.jpg",
+        "img1v1Url": "https://p4.music.126.net/_ECPuM0s0qtWhkpQOSTZUg==/109951169164936940.jpg",
+        "followed": false,
+        "trans": "",
+        "alias": [
+          "Jay Chou",
+          "周董"
+        ],
+        "name": "周杰伦",
+        "id": 6452,
+        "publishTime": 1516594084751,
+        "picId_str": "109951169164936450",
+        "img1v1Id_str": "109951169164936940",
+        "mvSize": 9
+      },
+      "expected": {
+        "source": "netease",
+        "id": "6452",
+        "name": "周杰伦",
+        "avatar": "https://p3.music.126.net/NWv6PtSBkyWZzqbJVzBr7g==/109951169164936450.jpg?param=1200y1200",
+        "alias": [
+          "Jay Chou",
+          "周董"
+        ],
+        "albumSize": 49,
+        "musicSize": 591,
+        "briefDesc": "周杰伦（Jay Chou），1979年1月18日出生于台湾省新北市，祖籍福建省永春县，华语流行乐男歌手、音乐人、演员、导演，毕业于淡江中学 。\n2000年，发行个人首张音乐专辑《Jay》 ，并在华语乐坛获得广泛关注 。2001年，凭借音乐专辑《范特西》奠定其在乐坛的地位 ，并获得三座台湾金曲奖 [38]。2003年，登上美国《时代》杂志封面 ；此后，推出《叶惠美》《七里香》《11月的萧邦》《依然范特西》等商业与口碑兼具的音乐专辑 。2005年，主演个人首部电影《头文字D》 ，凭借该片获得香港电影金像奖和台湾电影金马奖“最佳新演员奖” 。2007年，成立“杰威尔音乐有限公司” ，首度自编自导并领衔主演爱情片《不能说的秘密》 。2009年起，凭借音乐专辑《魔杰座》和《跨时代》两度获得台湾金曲奖“最佳国语男歌手奖” ；之后，持续产出作品并举行巡演 。2023年，凭借音乐专辑《最伟大的作品》成为首位获得全球年度销量冠军的华语歌手 。2024年，成为首位在台北大巨蛋开唱的歌手 。2026年，发行音乐专辑《太阳之子》。\n周杰伦共获得15座台湾金曲奖，是获得该奖最多的音乐人 。他四次获得世界音乐大奖“中国区最畅销艺人奖” 、两次获得MTV亚洲大奖“最受欢迎歌手奖” ，并被美国CNN评为“25位亚洲最具影响力人物”之一 、被《Fast Company》杂志评为“全球百大创意人物”之一 。作为音乐人，他为自己的所有原唱歌曲作曲并担任制作人 ，更将R&B、嘻哈等风格的唱法与中国传统音乐融合，使得“中国风”这一名词登上流行音乐行列"
+      },
+      "source": "录制：歌手详情"
+    },
+    {
+      "id": "album.album",
+      "fn": "netease.normalizeAlbum",
+      "input": {
+        "songs": [],
+        "paid": false,
+        "onSale": false,
+        "mark": 8192,
+        "awardTags": null,
+        "displayTags": null,
+        "artists": [
+          {
+            "img1v1Id": 18686200114669624,
+            "topicPerson": 0,
+            "picId": 0,
+            "musicSize": 0,
+            "albumSize": 0,
+            "briefDesc": "",
+            "picUrl": "",
+            "img1v1Url": "https://p4.music.126.net/VnZiScyynLG7atLIZ2YPkw==/18686200114669622.jpg",
+            "followed": false,
+            "trans": "",
+            "alias": [],
+            "name": "张悬",
+            "id": 10557,
+            "img1v1Id_str": "18686200114669622"
+          }
+        ],
+        "copyrightId": 7001,
+        "picId": 109951167778492600,
+        "artist": {
+          "img1v1Id": 109951172230182290,
+          "topicPerson": 0,
+          "picId": 109951172230180900,
+          "musicSize": 176,
+          "albumSize": 11,
+          "briefDesc": "",
+          "picUrl": "https://p4.music.126.net/XSQHadsjqY8Sv8KgUkMufg==/109951172230180889.jpg",
+          "img1v1Url": "https://p4.music.126.net/OGc1zDtsJjjFChBLY4DNlQ==/109951172230182284.jpg",
+          "followed": false,
+          "trans": "",
+          "alias": [],
+          "name": "张悬",
+          "id": 10557,
+          "picId_str": "109951172230180889",
+          "img1v1Id_str": "109951172230182284"
+        },
+        "briefDesc": "",
+        "publishTime": 1344528000000,
+        "company": "索尼音乐",
+        "picUrl": "https://p3.music.126.net/Baol42Xvto6rjRdj0aK_wg==/109951167778492613.jpg",
+        "commentThreadId": "R_AL_3_32311",
+        "blurPicUrl": "https://p3.music.126.net/Baol42Xvto6rjRdj0aK_wg==/109951167778492613.jpg",
+        "companyId": 0,
+        "pic": 109951167778492600,
+        "subType": "录音室版",
+        "status": 1,
+        "description": "　这是张悬，也是你，也正是身逢这个时代的你我。\n　　读着她的词，听着她的歌，体会到张悬的作品是多么符合这个时代的产物，堪称是当代桂冠诗人歌手。\n　　你看到的，你听到的，即是你所知道的张悬，也是一部份的你自己。\n　　缘份是神，游戏，是我们。\n\n\n2012年盛夏，最令人期待的专辑之一。张悬最新作品『神的游戏』，词、曲、编曲、制作全由张悬倾注心血完成。风格独到的音乐与观点细腻的文字，第一次聆听就被深深吸引，这张专辑却同样直指人生各种境地，在时光与反复中将依旧无限耐人寻味。一如张悬历来作品的展现，此刻交出的这张作品，总括张悬三年以来个人生活的累积心得，既安稳的平心静气娓娓道来，又蓄势着蕴涵为未来将要展开的行动预备新能量。\n\n",
+        "tags": "",
+        "alias": [],
+        "name": "神的游戏",
+        "id": 32311,
+        "type": "专辑",
+        "size": 9,
+        "picId_str": "109951167778492613",
+        "info": {
+          "commentThread": {
+            "id": "R_AL_3_32311",
+            "resourceInfo": {
+              "id": 32311,
+              "userId": -1,
+              "name": "神的游戏",
+              "imgUrl": "http://p4.music.126.net/Baol42Xvto6rjRdj0aK_wg==/109951167778492613.jpg",
+              "creator": null,
+              "encodedId": null,
+              "subTitle": null,
+              "webUrl": null
+            },
+            "resourceType": 3,
+            "commentCount": 1981,
+            "likedCount": 0,
+            "shareCount": 10667,
+            "hotCount": 118,
+            "latestLikedUsers": null,
+            "resourceId": 32311,
+            "resourceOwnerId": -1,
+            "resourceTitle": "神的游戏"
+          },
+          "latestLikedUsers": null,
+          "liked": false,
+          "comments": null,
+          "resourceType": 3,
+          "resourceId": 32311,
+          "commentCount": 1981,
+          "likedCount": 0,
+          "shareCount": 10667,
+          "threadId": "R_AL_3_32311"
+        }
+      },
+      "expected": {
+        "source": "netease",
+        "id": "32311",
+        "name": "神的游戏",
+        "cover": "https://p3.music.126.net/Baol42Xvto6rjRdj0aK_wg==/109951167778492613.jpg?param=1200y1200",
+        "artist": "张悬",
+        "artistId": "10557",
+        "artistRefs": [
+          {
+            "id": "10557",
+            "name": "张悬"
+          }
+        ],
+        "year": 2012,
+        "type": "album",
+        "trackCount": 9
+      },
+      "source": "录制：专辑详情"
+    },
+    {
+      "id": "personalized.playlist.0",
+      "fn": "netease.normalizePlaylist",
+      "input": {
+        "id": 13887767163,
+        "type": 0,
+        "name": "茶禅一味 · 古琴养心曲集",
+        "copywriter": "",
+        "picUrl": "https://p3.music.126.net/JrzaIu8FPWU2IyC8AJ0p8Q==/109951171362570453.jpg",
+        "canDislike": true,
+        "trackNumberUpdateTime": 1750923063777,
+        "playCount": 33754,
+        "trackCount": 27,
+        "highQuality": false,
+        "alg": "byplaylist_play_ol_swing"
+      },
+      "expected": {
+        "source": "netease",
+        "id": "13887767163",
+        "name": "茶禅一味 · 古琴养心曲集",
+        "cover": "https://p3.music.126.net/JrzaIu8FPWU2IyC8AJ0p8Q==/109951171362570453.jpg?param=1200y1200",
+        "trackCount": 27,
+        "playCount": 33754
+      },
+      "source": "录制：推荐歌单"
+    },
+    {
+      "id": "personalized.playlist.1",
+      "fn": "netease.normalizePlaylist",
+      "input": {
+        "id": 18115258869,
+        "type": 0,
+        "name": "皇帝内经五行养生篇|宣肺气强肾气 静心曲",
+        "copywriter": "",
+        "picUrl": "https://p4.music.126.net/9bjvduj8yfJikuQEX6p8EA==/109951173501543630.jpg",
+        "canDislike": true,
+        "trackNumberUpdateTime": 1783095651453,
+        "playCount": 32846,
+        "trackCount": 89,
+        "highQuality": false,
+        "alg": "byplaylist_play_ol_swing"
+      },
+      "expected": {
+        "source": "netease",
+        "id": "18115258869",
+        "name": "皇帝内经五行养生篇|宣肺气强肾气 静心曲",
+        "cover": "https://p3.music.126.net/9bjvduj8yfJikuQEX6p8EA==/109951173501543630.jpg?param=1200y1200",
+        "trackCount": 89,
+        "playCount": 32846
+      },
+      "source": "录制：推荐歌单"
+    },
+    {
+      "id": "bilibili.decodeTitle.0",
+      "fn": "bilibili.decodeTitle",
+      "input": "<em class=\"keyword\">周杰伦</em> 稻香 &amp; 晴天",
+      "expected": "周杰伦 稻香 & 晴天",
+      "source": "格式样本"
+    },
+    {
+      "id": "bilibili.parseDuration.0",
+      "fn": "bilibili.parseDuration",
+      "input": "12:34",
+      "expected": 754,
+      "source": "格式样本"
+    },
+    {
+      "id": "bilibili.canonicalImage.0",
+      "fn": "bilibili.canonicalImage",
+      "input": "//i2.hdslb.com/bfs/a.jpg",
+      "expected": "https://i0.hdslb.com/bfs/a.jpg",
+      "source": "格式样本"
+    },
+    {
+      "id": "bilibili.decodeTitle.1",
+      "fn": "bilibili.decodeTitle",
+      "input": "1:02:03",
+      "expected": "1:02:03",
+      "source": "格式样本"
+    },
+    {
+      "id": "bilibili.parseDuration.1",
+      "fn": "bilibili.parseDuration",
+      "input": "1:02:03",
+      "expected": 3723,
+      "source": "格式样本"
+    },
+    {
+      "id": "bilibili.canonicalImage.1",
+      "fn": "bilibili.canonicalImage",
+      "input": "http://i0.hdslb.com/bfs/b.jpg",
+      "expected": "https://i0.hdslb.com/bfs/b.jpg",
+      "source": "格式样本"
+    },
+    {
+      "id": "bilibili.normalizeTrack.0",
+      "fn": "bilibili.normalizeTrack",
+      "input": {
+        "bvid": "BV1xx411c7mD",
+        "title": "测试 &amp; 标题",
+        "pic": "//i1.hdslb.com/bfs/x.jpg",
+        "duration": "04:05",
+        "author": "UP 主"
+      },
+      "expected": {
+        "source": "bilibili",
+        "id": "BV1xx411c7mD",
+        "title": "测试 & 标题",
+        "artist": "UP 主",
+        "album": "",
+        "cover": "https://i0.hdslb.com/bfs/x.jpg",
+        "duration": 245,
+        "fee": "free"
+      },
+      "source": "格式样本"
+    }
+  ]
+}

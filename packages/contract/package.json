@@ -1,0 +1,27 @@
+{
+  "name": "@pterosaur/contract",
+  "version": "0.1.0",
+  "private": true,
+  "description": "跨端契约：能力清单、算法向量、黄金样例与 HTTP API 形状（见 ADR-065 / ADR-069）",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "regen:vectors": "tsx scripts/regenVectors.ts",
+    "record": "tsx scripts/recordLive.ts",
+    "regen:capabilities": "tsx scripts/genCapabilities.ts"
+  },
+  "dependencies": {
+    "@pterosaur/core": "workspace:*",
+    "@pterosaur/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.4",
+    "tsx": "^4.23.1",
+    "typescript": "^5.9.3",
+    "vite-plus": "^1.4.0",
+    "vitest": "5.0.3"
+  }
+}

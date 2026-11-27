@@ -2,8 +2,9 @@ import { Hono } from 'hono'
 import type { Context } from 'hono'
 import { cors } from 'hono/cors'
 
-import { adapterOf } from './sources/index.js'
-import type { SourceAdapter } from './sources/types.js'
+import { adapterOf, configureCore } from '@pterosaur/core'
+import type { SourceAdapter } from '@pterosaur/core'
+import { nodeCoreHost } from './sources/host.js'
 import { defineQueryRoute, defineSegRoute } from './sources/route.js'
 import { sseChannel } from './sse.js'
 import type { RipEvent } from '@pterosaur/shared/rip'
@@ -28,7 +29,7 @@ import {
   audioContentTypeFromUrl,
   fetchAudioCandidate,
 } from './audioFetch.js'
-import { upstreamExpiresAt } from './sources/http.js'
+import { upstreamExpiresAt } from '@pterosaur/core/http'
 import { isFakeBurn } from './imapi.js'
 import { createRipEngine, validateBurnBody, type RipEngine } from './rip.js'
 import { failure, onError } from './errors.js'
@@ -210,6 +211,10 @@ async function streamHandler(c: Context): Promise<Response> {
 export function createApp({
   rip = createRipEngine(),
 }: { rip?: RipEngine } = {}) {
+  // 注入 Node 宿主的内核端口（网络 / 密码原语 / 二维码渲染 / 设备身份 / NCM 库）。
+  // 协议内核（@pterosaur/core）不碰运行环境；重复注入只是整体替换端口对象，幂等。
+  configureCore(nodeCoreHost())
+
   const app = new Hono()
   app.onError(onError)
 

@@ -5,6 +5,8 @@
  * 因此不得包含任何运行环境相关的代码（如 DOM / Node API）。
  */
 
+import { encodeForm } from './url.js'
+
 /** 可浏览的音乐音源（顺序即 UI 展示顺序：网易云优先）。 */
 export const MUSIC_SOURCES = ['netease'] as const
 
@@ -391,10 +393,11 @@ export function streamUrl(
   id: string,
   opts?: { level?: AudioLevel; token?: string },
 ): string {
-  const q = new URLSearchParams()
-  if (opts?.level) q.set('level', opts.level)
-  if (opts?.token) q.set('t', opts.token)
-  const qs = q.toString()
+  // 键序固定为 level、t；表单编码与 `URLSearchParams` 同口径（见 url.ts）
+  const qs = encodeForm({
+    ...(opts?.level ? { level: opts.level } : {}),
+    ...(opts?.token ? { t: opts.token } : {}),
+  })
   return `${STREAM_BASE}/${source}/${encodeURIComponent(id)}${qs ? `?${qs}` : ''}`
 }
 

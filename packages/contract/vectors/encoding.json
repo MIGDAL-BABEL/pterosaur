@@ -1,0 +1,209 @@
+{
+  "schema": "pterosaur-vectors@1",
+  "vectors": [
+    {
+      "kind": "utf8.encode",
+      "input": "",
+      "expected": "",
+      "source": "RFC 3629"
+    },
+    {
+      "kind": "utf8.encode",
+      "input": "abc",
+      "expected": "616263",
+      "source": "RFC 3629"
+    },
+    {
+      "kind": "utf8.encode",
+      "input": "中文 é ü",
+      "expected": "e4b8ade6968720c3a920c3bc",
+      "source": "RFC 3629"
+    },
+    {
+      "kind": "utf8.encode",
+      "input": "😀🎵",
+      "expected": "f09f9880f09f8eb5",
+      "source": "RFC 3629"
+    },
+    {
+      "kind": "utf8.encode",
+      "input": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "expected": "6161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161",
+      "source": "RFC 3629"
+    },
+    {
+      "kind": "utf8.encode",
+      "input": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "expected": "78787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878",
+      "source": "RFC 3629"
+    },
+    {
+      "kind": "utf8.decode",
+      "input": "",
+      "expected": "",
+      "source": "RFC 3629"
+    },
+    {
+      "kind": "utf8.decode",
+      "input": "616263",
+      "expected": "abc",
+      "source": "RFC 3629"
+    },
+    {
+      "kind": "utf8.decode",
+      "input": "e4b8ade6968720c3a920c3bc",
+      "expected": "中文 é ü",
+      "source": "RFC 3629"
+    },
+    {
+      "kind": "utf8.decode",
+      "input": "f09f9880f09f8eb5",
+      "expected": "😀🎵",
+      "source": "RFC 3629"
+    },
+    {
+      "kind": "utf8.decode",
+      "input": "6161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161",
+      "expected": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "source": "RFC 3629"
+    },
+    {
+      "kind": "base64.encode",
+      "input": "",
+      "expected": "",
+      "source": "RFC 4648"
+    },
+    {
+      "kind": "base64.encode",
+      "input": "abc",
+      "expected": "YWJj",
+      "source": "RFC 4648"
+    },
+    {
+      "kind": "base64.encode",
+      "input": "中文 é ü",
+      "expected": "5Lit5paHIMOpIMO8",
+      "source": "RFC 4648"
+    },
+    {
+      "kind": "base64.encode",
+      "input": "😀🎵",
+      "expected": "8J+YgPCfjrU=",
+      "source": "RFC 4648"
+    },
+    {
+      "kind": "base64.encode",
+      "input": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "expected": "YWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWE=",
+      "source": "RFC 4648"
+    },
+    {
+      "kind": "base64.decode",
+      "input": "",
+      "expected": "",
+      "source": "RFC 4648"
+    },
+    {
+      "kind": "base64.decode",
+      "input": "aGVsbG8=",
+      "expected": "68656c6c6f",
+      "source": "RFC 4648"
+    },
+    {
+      "kind": "base64.decode",
+      "input": "5Lit5paH",
+      "expected": "e4b8ade69687",
+      "source": "RFC 4648"
+    },
+    {
+      "kind": "base64.decode",
+      "input": "////",
+      "expected": "ffffff",
+      "source": "RFC 4648"
+    },
+    {
+      "kind": "base64.decode",
+      "input": "AAEC",
+      "expected": "000102",
+      "source": "RFC 4648"
+    },
+    {
+      "kind": "hex.encode",
+      "input": "",
+      "expected": "",
+      "source": "子串编码"
+    },
+    {
+      "kind": "hex.encode",
+      "input": "abc",
+      "expected": "616263",
+      "source": "子串编码"
+    },
+    {
+      "kind": "hex.encode",
+      "input": "中文",
+      "expected": "e4b8ade69687",
+      "source": "子串编码"
+    },
+    {
+      "kind": "hex.decode",
+      "input": "",
+      "expected": "",
+      "source": "子串编码"
+    },
+    {
+      "kind": "hex.decode",
+      "input": "616263",
+      "expected": "abc",
+      "source": "子串编码"
+    },
+    {
+      "kind": "hex.decode",
+      "input": "e4b8ad",
+      "expected": "中",
+      "source": "子串编码"
+    },
+    {
+      "kind": "form.encode",
+      "input": "",
+      "expected": "",
+      "source": "WHATWG URL 标准"
+    },
+    {
+      "kind": "form.encode",
+      "input": "abc",
+      "expected": "abc",
+      "source": "WHATWG URL 标准"
+    },
+    {
+      "kind": "form.encode",
+      "input": "中文 é ü",
+      "expected": "%E4%B8%AD%E6%96%87+%C3%A9+%C3%BC",
+      "source": "WHATWG URL 标准"
+    },
+    {
+      "kind": "form.encodeObject",
+      "input": {
+        "a": "b c"
+      },
+      "expected": "a=b+c",
+      "source": "WHATWG URL 标准"
+    },
+    {
+      "kind": "form.encodeObject",
+      "input": {
+        "codekey": "k-2"
+      },
+      "expected": "codekey=k-2",
+      "source": "WHATWG URL 标准"
+    },
+    {
+      "kind": "form.encodeObject",
+      "input": {
+        "params": "+/=="
+      },
+      "expected": "params=%2B%2F%3D%3D",
+      "source": "WHATWG URL 标准"
+    }
+  ]
+}

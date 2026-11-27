@@ -1,0 +1,66 @@
+{
+  "musicSources": [
+    "netease"
+  ],
+  "cassetteSources": [
+    "bilibili"
+  ],
+  "defaultSource": "netease",
+  "sources": {
+    "netease": {
+      "core": true,
+      "optional": {
+        "audioQuality": true,
+        "streamHeaders": false,
+        "searchArtists": true,
+        "searchAlbums": true,
+        "searchPlaylists": true,
+        "artistDetail": true,
+        "playlistTracks": true,
+        "songDetail": true,
+        "parts": false,
+        "recommendPlaylists": true,
+        "toplists": true,
+        "topPlaylists": true,
+        "newSongs": true,
+        "newAlbums": true,
+        "hotSongs": true,
+        "playlistCategories": true,
+        "qrKey": true,
+        "qrCreate": true,
+        "qrCheck": true,
+        "qrLoginUrl": true,
+        "parseUserCookie": true,
+        "userPlaylists": true
+      }
+    },
+    "bilibili": {
+      "core": true,
+      "optional": {
+        "audioQuality": true,
+        "streamHeaders": true,
+        "searchArtists": false,
+        "searchAlbums": false,
+        "searchPlaylists": true,
+        "artistDetail": false,
+        "playlistTracks": true,
+        "songDetail": false,
+        "parts": true,
+        "recommendPlaylists": false,
+        "toplists": false,
+        "topPlaylists": false,
+        "newSongs": false,
+        "newAlbums": false,
+        "hotSongs": false,
+        "playlistCategories": false,
+        "qrKey": true,
+        "qrCreate": true,
+        "qrCheck": true,
+        "qrLoginUrl": true,
+        "parseUserCookie": false,
+        "userPlaylists": false
+      }
+    }
+  },
+  "enginePortable": true
+}

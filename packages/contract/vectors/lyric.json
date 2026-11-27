@@ -1,0 +1,110 @@
+{
+  "schema": "pterosaur-vectors@1",
+  "vectors": [
+    {
+      "kind": "lyric.parseLrc",
+      "input": {
+        "lrc": ""
+      },
+      "expected": {
+        "lines": [],
+        "timed": false
+      },
+      "source": "LRC 格式"
+    },
+    {
+      "kind": "lyric.parseLrc",
+      "input": {
+        "lrc": "[00:01.00]第一行\n[00:03.50]第二行"
+      },
+      "expected": {
+        "lines": [
+          {
+            "time": 1,
+            "text": "第一行"
+          },
+          {
+            "time": 3.5,
+            "text": "第二行"
+          }
+        ],
+        "timed": true
+      },
+      "source": "LRC 格式"
+    },
+    {
+      "kind": "lyric.parseLrc",
+      "input": {
+        "lrc": "[00:01.00]Hello\n[00:03.50]World",
+        "translation": "[00:01.00]你好\n[00:03.50]世界"
+      },
+      "expected": {
+        "lines": [
+          {
+            "time": 1,
+            "text": "Hello",
+            "translation": "你好"
+          },
+          {
+            "time": 3.5,
+            "text": "World",
+            "translation": "世界"
+          }
+        ],
+        "timed": true
+      },
+      "source": "LRC 格式"
+    },
+    {
+      "kind": "lyric.parseLrc",
+      "input": {
+        "lrc": "[ar:某艺人]\n[ti:某歌]\n[00:05.12]只有一行"
+      },
+      "expected": {
+        "lines": [
+          {
+            "time": 5.12,
+            "text": "只有一行"
+          }
+        ],
+        "timed": true
+      },
+      "source": "LRC 格式"
+    },
+    {
+      "kind": "lyric.parseLrc",
+      "input": {
+        "lrc": "[00:02.00]A\n[00:01.00]B\n[00:01.00]C"
+      },
+      "expected": {
+        "lines": [
+          {
+            "time": 1,
+            "text": "B"
+          },
+          {
+            "time": 1,
+            "text": "C"
+          },
+          {
+            "time": 2,
+            "text": "A"
+          }
+        ],
+        "timed": true
+      },
+      "source": "LRC 格式"
+    },
+    {
+      "kind": "lyric.parseLrc",
+      "input": {
+        "lrc": "纯文本歌词，没有时间轴"
+      },
+      "expected": {
+        "lines": [],
+        "timed": false
+      },
+      "source": "LRC 格式"
+    }
+  ]
+}

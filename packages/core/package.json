@@ -1,0 +1,29 @@
+{
+  "name": "@pterosaur/core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./http": "./src/sources/http.ts",
+    "./netease": "./src/sources/netease.ts",
+    "./bilibili": "./src/sources/bilibili.ts",
+    "./neteaseSign": "./src/sources/neteaseSign.ts",
+    "./neteaseApi": "./src/sources/neteaseApi.ts",
+    "./crypto": "./src/services/crypto.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "check:live": "tsx test/live/neteaseLive.ts"
+  },
+  "dependencies": {
+    "@pterosaur/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.4",
+    "tsx": "^4.23.1",
+    "typescript": "^5.9.3",
+    "vite-plus": "^1.4.0",
+    "vitest": "5.0.3"
+  }
+}

@@ -1193,3 +1193,153 @@
     横向改为「整列 + 露出下一列一角」——这改变了超宽屏与窄屏下的列数与卡片大小。
   - `TrackList layout="row"` 不提供表头、序号、行内喜欢 / 加到歌单（保持原紧凑行形态）。
 - 何时重新审视：若发现流之外出现需要标题头的横向分区，或需要卡片本体合并为 `kind` 派发时。
+
+## ADR-064：macOS / Android 原生客户端自带内核，不依赖自托管 server
+
+- 日期：2026-11-27
+- 状态：已采纳（决策先行，代码与目录随后续步骤落地）
+- 背景（遇到了什么问题）：现有形态是「React 前端 + Hono 后端」的 Web 应用，离开部署好的 Node 后端即不可用（ADR-001）。计划新增两个原生客户端——macOS（Swift，Liquid Glass）与 Android（Kotlin，Jetpack Compose）——并与 Web 端保持核心功能同步。原生端的数据从哪来，是首先要定的问题。
+- 考虑过的方案：
+  1. **瘦客户端**：原生端只做 UI，数据全部取自用户自托管 server 的 `/api/*` 与 `/stream/*`。后端零改动，契约即 HTTP API，协议层只存在于 server 一处。
+  2. **自带内核**：原生端在本机实现音源协议层（搜索、发现、解析播放地址、歌词、登录），不依赖 server 即可完整使用。
+  3. 原生端内嵌 Node 后端作为子进程，把 server 原样随 app 分发。
+- 决策：采用 2。原生客户端是独立应用，自托管 server 不是它的运行前提；server 的角色变为「Web 端的必需后端 + 原生端可选的云同步中枢」。
+- 为什么选这个：瘦客户端让原生应用沦为自托管 server 的壳——没有 server 就不可用，原生版本因此站不住脚。原生端没有浏览器的同源与混合内容约束，协议层在端上运行没有技术障碍：播放器带 `streamHeaders` 即可直接请求上游 https 直链。
+- 为什么不选其他：方案 1 见上；方案 3 在 Android 上没有现实可行的 Node ≥ 24 承载方式，macOS 虽可行但两端形态会分叉。
+- 后果：
+  - 「同源代理铁律」只约束 Web 端。原生端的对应铁律是**只有协议层（core）可以请求上游，UI 不得直连上游**。
+  - 登录在端上完成：二维码由原生渲染，协议层只产出内容 URL；会话 cookie 存 Keychain（macOS）或加密存储（Android）。设备身份不能沿用 playwright（ADR-052），须落地 ADR-053 的纯算法，必要时以隐藏 WebView 运行官方 SDK 兜底；自提供 Cookie（ADR-062）照旧。
+  - 资料库、离线缓存、播放队列的持久化各自原生实现，策略沿用现有 spec。`LibraryData` / `SyncEnvelope` 由此成为跨端持久契约。
+  - 云同步在原生端是可选能力：连上用户自己的 server 才启用，否则纯本地。
+  - 功能对等范围不在本决策内，已定的只有一条：**CD 刻录（ADR-048 的实体直刻）不支持 macOS / Android 版**，它本就仅限同机 Windows；PWA 外壳缓存同样天然只属于 Web 端。其余能力（含翻录的数字打包）哪些进入原生端另行确定。
+- 何时重新审视：出现必须依托服务端的能力（如跨设备统一保管会话），或原生端需要脱离网易云 / B 站音源。
+
+## ADR-065：协议层按平台各写一份（TS / Swift / Kotlin），以契约为唯一同步机制
+
+- 日期：2026-11-27
+- 状态：已采纳（决策先行，`packages/core` 与 `packages/contract` 随后续步骤落地）
+- 背景（遇到了什么问题）：原生端自带内核（ADR-064）意味着网易云 / B 站适配器、扫码登录与设备指纹要在三个平台上都能跑。适配器层（`apps/server/src/sources/*`，约 2.9k 行）是全仓最不稳定的一段——ADR-051 / 052 / 053 / 062 三天内追着上游登录风控走，`NeteaseCloudMusicApi` 的端点也在漂移。多份实现最大的风险是**漂移**：同一个上游变化只修了一端，表现为「一端能登录、另一端不能」。
+- 考虑过的方案：
+  1. **嵌入 JS 引擎跑同一份 TS 内核**：macOS 用系统自带的 JavaScriptCore，Android 用 QuickJS / Hermes。协议层只有一份，现有测试直接复用；代价是每端一两百行桥接、JSON 边界、设备上调试 JS 较弱、Android 多一个引擎依赖。
+  2. **Rust 内核 + UniFFI**：单份实现，但约 3k 行重写、交叉编译、第四门语言；server 要么走 napi 要么保留 TS 一份。
+  3. **KMP 内核**：Android 直接使用，macOS 经 Kotlin/Native 出 framework 给 Swift。仍是两份实现（TS + Kotlin），Swift 侧要处理 ObjC 互操作。
+  4. **各平台原生实现**：TS（参考实现）、Swift、Kotlin 各一份，以契约对齐。
+- 决策：采用 4。协议层不共享代码，三份实现靠 `packages/contract` 对齐，**契约是唯一的同步机制**。
+  - `packages/contract` 的内容：
+    - 模型 schema：实体（`Track` / `Artist` / `Album` / `Playlist`）、`ApiResult` 信封、`LibraryData` / `SyncEnvelope`、SSE 的 `{ rev }`。
+    - 录制的上游请求 / 响应对：每个端点的 URL、请求头、请求体与原始响应。各端以回放服务器离线测试，并在固定随机源的前提下断言自己构造的请求与录制一致（签名摘要、密文）。
+    - 算法向量：网易云 weapi / eapi 的明文与密文对照、B 站 WBI 签名、ADR-053 指纹的常量表与期望输出、`parseLrc`、带种子的 `shuffledIndexes`。
+    - 黄金输出：上游原始 JSON 归一化为实体的结果。
+  - TS 侧是参考实现：适配器层抽为 `packages/core`，`NeteaseCloudMusicApi` 承担的 16 个接口改为自实现（协议可读、可录制），server 改为消费 `packages/core`，对外行为不变。
+  - 各端的 core 与 app 分离：core 是纯逻辑，不依赖 UI 与平台框架，契约测试可在 Windows 本机运行（Kotlin 为 JVM 模块；Swift 为 Swift Package，需开源工具链）。
+  - 铁律：上游协议的改动只发生在各端的 core 模块，且与 `packages/contract` 的更新在**同一提交**；各端测试读同一份契约，不得各自复制样例；`packages/contract/**` 变更时三端的一致性测试全部运行。
+- 为什么选这个：三端的协议层与 UI 同语言，没有桥接、没有嵌入运行时，密码原语、cookie、网络栈都按平台习惯实现。漂移由 CI 暴露，而不是在用户扫码失败时暴露。
+- 为什么不选其他：方案 1 的实现份数最少，但协议层会落在 JS 引擎里，与「协议层以各端原生语言实现」的方向不符；方案 2 的迁移成本与第四门语言不成比例；方案 3 仍是两份实现。
+- 后果：
+  - 上游每变一次要改三处。契约必须先于原生端的功能开发就位，否则漂移无从发现。
+  - 录制样例含真实上游响应，入库前须脱敏（剔除账号信息与凭证）。
+  - 跨端持久载荷（`LibraryData` / `SyncEnvelope`）的兼容规则在契约落地时另立条款。云同步是整份覆盖（ADR-038），任一端解码时丢弃未知字段再回写，都会抹掉其它端写入的字段。
+- 何时重新审视：上游变更频繁到三处同步不可维持；或新增本决策未覆盖的客户端——C++ 终端版不走第四份原生实现，见 ADR-067。
+
+## ADR-066：多端并存采用单仓库，原生端拆 core / app 两个模块
+
+- 日期：2026-11-27
+- 状态：已采纳（决策先行，目录随后续步骤落地）
+- 背景（遇到了什么问题）：新增两个与 TS 没有代码共享的原生应用（Swift / Kotlin），且协议层要三份实现、靠契约对齐（ADR-065）。仓库形态有两条路：并入现有单仓库，或各端拆库、把契约当作发布物。
+- 考虑过的方案：
+  1. **单仓库**：`apps/macos`、`apps/android` 与现有 `apps/web`、`apps/server` 并排，新增 `packages/core` 与 `packages/contract`。
+  2. **拆库**：Web 保持本仓，原生端各建一仓；契约作为版本化产物发布（npm / SwiftPM / Maven）。
+- 决策：采用 1。
+  - `apps/web`、`apps/server`：现有，不动。
+  - `apps/macos`：Swift，`core`（Swift Package）与 `app`（SwiftUI / Liquid Glass）两个模块。
+  - `apps/android`：Kotlin，`core`（JVM 模块）与 `app`（Compose）两个模块。
+  - `packages/core`：TS 参考实现（适配器、登录、规范化）。
+  - `packages/contract`：schema、录制、向量、黄金输出。
+  - `packages/shared`：现有类型。
+- 为什么选这个：单人仓库（`.git` 约 2.4MB），拆库的好处（权限隔离、独立发版节奏、多团队并行）用不上。`docs/` 的 ADR 与 spec 是三端共读的唯一事实来源，单仓库让规格、协议、契约、三端实现在同一提交内原子变更；契约由参考实现产出后直接入库，不需要发布流程；CI 只需「契约目录变更则三端一致性测试全跑」一条规则。macOS 只能在 Mac 或 CI 的 macOS runner 上构建，按路径过滤即可做到推一次、各端自行决定是否构建。
+- 为什么不选其他：拆库后契约需要发布与跨仓对版本，每改一次接口都要在多个仓库之间同步，正是 ADR-065 要极力避免的漂移。
+- 后果：
+  - pnpm 的 `apps/*` 只收录带 `package.json` 的目录，workspace 配置不变。
+  - UI 层只能在 Mac、设备或 CI 上编译；core 的契约测试在 Windows 本机即可运行（见 ADR-065）。
+  - 平台约定分别写进 `apps/macos/AGENTS.md` 与 `apps/android/AGENTS.md`，根 `AGENTS.md` 只写跨端铁律。
+  - 发版：Web / server 照旧滚动部署；原生端按路径打 tag（`macos/v…`、`android/v…`）。
+- 何时重新审视：某一端出现独立维护者，或某一端的许可证 / 可见性与其它部分不同，或原生端要脱离本仓库的契约自行演进。
+
+## ADR-070：macOS 外壳按 Liquid Glass 重构，最低系统提到 macOS 26
+
+- 日期：2026-11-27
+- 状态：已采纳
+- 背景（遇到了什么问题）：ADR-066 把 macOS 端定为 SwiftUI / Liquid Glass，但首版外壳实际是「平铺列表 + 不透明侧栏 + 贴边播放条」的传统排版：窗口没有内容层，玻璃没有可折射的东西，整体观感偏旧，和系统里其它原生 App 不像一类东西。
+- 考虑过的方案：
+  1. **保留 macOS 15 部署目标，用材质近似**：`regularMaterial` / `ultraThinMaterial` 拼出「类玻璃」，兼容面最宽。
+  2. **部署目标提到 macOS 26，直接用系统 Liquid Glass**：`glassEffect`、`GlassEffectContainer`、`buttonStyle(.glass/.glassProminent)`、`backgroundExtensionEffect`。
+  3. 换成 AppKit + `NSGlassEffectView`：能力最全，但要维护一套与 SwiftUI 外壳并行的布局。
+- 决策：采用 2。
+  - `Package.swift` 平台版本 `macOS("26.0")`；外壳（`apps/macos/App`）自由使用 26 的玻璃 API，协议层 `Core` 仍不碰任何 UI。
+  - 根基座改为 `AppBackground`：主题渐变 + 当前曲封面代表色（`ArtColorLoader` 轻量取色），铺满全窗口含标题栏；侧栏与详情区用 `backgroundExtensionEffect` 把内容延伸到标题栏下。
+  - 玻璃只给浮动元素：悬浮播放条（`.safeAreaInset`）、主操作按钮、圆形图标钮、账号入口；内容（列表 / 封面 / hero）不套玻璃，列表背景一律透明让底座透上来。
+  - 封面卡悬停出玻璃播放钮；播放条控制键放进 `GlassEffectContainer`，让相邻玻璃融合成一簇。
+- 为什么选这个：Liquid Glass 的视觉效果依赖系统的折射 / 高光与窗口级材质，材质近似做不出同样的观感，还得同时维护两套分支；方案 3 与 SwiftUI 外壳的其余部分分叉太大。原生端的用户群本来就在新版 macOS 上，把部署目标抬到 26 的代价可以接受。
+- 为什么不选其他：见上。方案 1 的「像但不像」在两版之间会成为最难维护的状态。
+- 后果：
+  - **macOS 15 及更早系统无法运行本端**；CI 的 `macos-15` runner 构建 26 目标不受影响（SDK 自带 26 接口）。
+  - 后续新增 UI 须遵守「玻璃只给浮动层」的层级约定（见 `apps/macos/AGENTS.md`「视觉」一节），不要逐屏加玻璃。
+  - Web 端的视觉规范（ADR-059 等）不受影响，两端不追求像素一致，只追求信息层级一致。
+- 何时重新审视：需要支持 macOS 15；或系统玻璃 API 出现破坏性变更。
+
+## ADR-067：C++ 终端版以 QuickJS 承载 TS 内核，TUI 用 OpenTUI
+
+- 日期：2026-11-27
+- 状态：已采纳（决策先行；实现排在 Web / macOS / Android 三端稳定之后）
+- 背景（遇到了什么问题）：希望另有一个 C++ 的终端（sh）版，并「借用 Claude Code 的终端绘制引擎」。前者若沿用 ADR-065 的做法，会成为第四份协议实现。后者经查证不成立：本机 Claude Code（2.1.332）的终端层是 Ink 一脉的 React 渲染器加 Yoga flexbox，整体是 TypeScript，没有原生层，许可证也是专有的，没有可以链接的库。
+- 考虑过的方案：
+  1. **内核：C++ 再写一份协议实现。**
+  2. **内核：以 QuickJS 承载 TS 内核。** `packages/core` 打成单文件，由 C++ 宿主内嵌的 QuickJS 执行；宿主以 C / C++ 实现注入端口，调用面是 JSON 进出的单个入口。
+  3. **TUI：OpenTUI。** Zig 写的原生终端引擎，MIT，提供 `opentui.h`，OpenCode 在生产环境使用。
+  4. **TUI：Yoga 加 FTXUI。** Yoga 是 Meta 的 C++ flexbox 库；依赖更普通，但差分渲染与控件要自己做。
+- 决策：内核采用 2，TUI 采用 3。
+  - `packages/core` 须保持**引擎可移植**：不直接使用 Node 或 WHATWG 的运行时 API（`fetch`、`AbortSignal`、`node:crypto`、`require`、`URLSearchParams` 等），网络、密码原语、设备身份一律经注入端口；运行环境只假定标准 ES 与 `setTimeout` / `clearTimeout`。Node 宿主（server）与 QuickJS 宿主（C++）各实现一份端口。
+  - C++ 宿主：QuickJS 执行内核单文件；TUI 经 `opentui.h` 的 C API 调用，C++ 侧自包一层绑定；构建 OpenTUI 原生库需要 Zig 0.17 工具链。
+- 为什么选这个：协议层的实现份数保持三份（ADR-065），终端版不新增。QuickJS 本身是 C 库，对 C++ 宿主只有端口实现的成本。Claude Code 的终端引擎无从链接，OpenTUI 是同类架构（flexbox 布局、只重绘变化的格子）的开源原生实现，且带 C API。
+- 为什么不选其他：第四份原生实现把上游变化的同步成本从三处推到四处；Yoga 加 FTXUI 离目标观感更远。
+- 后果：
+  - ADR-065 留下的「新增第四个客户端时须先决定」由本决策了结。
+  - 引擎可移植的要求约束 `packages/core` 的抽离方式：Node 专有的部分（playwright 取设备身份、二维码渲染等）落在宿主一侧。
+  - 终端版的上游协议改动与 Web / server 共用同一份代码，但分发物要随内核重新构建。
+  - 宿主侧的其余选型（音频输出与解码、HTTP 客户端、JSON 与密码库）不在本决策内。
+- 何时重新审视：QuickJS 的能力或性能不足以承载内核；或 OpenTUI 的 C API 变得不稳定、停止维护。
+
+## ADR-068：网易云接口在内核自实现——weapi 的会话密钥走裸 RSA
+
+- 日期：2026-11-27
+- 状态：已采纳
+- 背景（遇到了什么问题）：ADR-065 把 `NeteaseCloudMusicApi` 承担的 16 个接口迁入 `packages/core`。首版按 RFC 8017 给 weapi 的 `encSecKey` 实现 PKCS#1 v1.5 填充；本地对拍（params 解密、RSA 与 forge 的 raw 运算一致）全部通过，但**真实上游对 weapi 接口一律回 HTTP 200 + 空体**。逐层二分（把库的 AES 段换成 Node 原生、把库的 RSA 段换成我们的实现）定位到 `encSecKey`。
+- 决策：`encSecKey` 用**裸 RSA**——`c = m^e mod n`，消息字节直接当整数、左侧补零到模长、不做任何填充（`crypto/hash.ts` 的 `rsaRaw`）。`rsaEncryptPkcs1` 保留为通用原语，但不用于网易云。
+- 为什么是这个：库调用的是 `forge.pki.publicKeyFromPem(pem).encrypt(secretKey, 'NONE')`；forge 的 `encrypt` 中 `'NONE'` / `'RAW'` 映射为 `{ encode: (e) => e }`，即跳过编码。这是上游与第三方客户端之间的私有约定，不是标准实现。
+- 后果：
+  - 会话密钥**没有随机性**，同一 secret 的 `encSecKey` 逐字节确定——测试据此锁住行为（`neteaseSign.test.ts` 手算模幂对照）。
+  - 裸 RSA 缺少填充带来的「语义安全」不适用：secret 本身是每次请求随机的 16 字符。上游如此设计，照办即可。
+  - 同时对齐了 Cookie 头（库对所有加密方式都在 switch 之前设 `Cookie`）：缺 `_ntes_nnid` / `NMTID` 等字段时，eapi 取流回 `-460`。
+- 何时重新审视：上游改为校验 PKCS#1 填充，或迁移到新的加密方式时。
+
+## ADR-069：跨端契约的内容与形态——数据而非代码，生成而非手写
+
+- 日期：2026-11-27
+- 状态：已采纳
+- 背景（遇到了什么问题）：ADR-065 决定协议层三端各写一份、以契约为唯一同步机制，但没有定义契约**是什么**。若契约只是「几份 Markdown 规格 + 各端自己抄样例」，漂移依旧无人发现：样例抄错了各端会一起错，规格改了各端各自的副本不会一起变。
+- 决策：契约是一组**语言无关的数据**，放在 `packages/contract`，且**全部由参考实现生成**：
+  - `capabilities.json`：源清单与能力矩阵，由内核的适配器注册表导出（能力是运行时事实——对象上有没有那个方法）；
+  - `vectors/*.json`：算法向量（编码 / 摘要 / AES / 网易云签名 / URL / 实体 / 歌词），由 `@pterosaur/core` 与 `@pterosaur/shared` 的真实输出产出；
+  - `golden/normalize.json`：上游原始 JSON → 共享模型的归一化样例，**输入取自真实响应**；
+  - `recordings/netease.ndjson`：匿名上游请求与响应，脱敏（无凭证、无设备 cookie），供各端回放与「请求形态断言」。
+- 为什么是这个形态：
+  - 数据而非代码 → Swift / Kotlin 不需要任何桥接或运行时，各自写一个几十行的 JSON 读取器即可；
+  - 生成而非手写 → 向量与实现的漂移不可能发生（重新生成即同步），手改 JSON 只会让测试失败；
+  - 生成物入库 → 原生端的构建机不依赖 Node；
+  - 真实性优先 → 归一化用**录制下来的真实上游响应**调，而不是手捏样本（历史上「手捏样本调通、真实响应崩」的事故见 ADR-058）。
+- 后果：
+  - 参考实现（TS）必须先「自证契约跑得通」：`packages/contract/test/contract.test.ts` 用参考实现复算每一条向量与黄金样例，并扫描录制里不含凭证。TS 都跑不过的契约，不算数。
+  - 契约分四类，各自的「一致性测试」形态不同：向量与黄金样例是**逐条比对**，录制是**回放 + 请求形态断言**。
+  - 改参考实现与重新生成契约必须在**同一提交**；`packages/contract/**` 的变更触发三端测试（ADR-066）。
+  - 录制带时间戳与实时数据（播放数等），重新录制会产生大 diff：只在协议形态变化时重录，不把它当回归基线。
+- 何时重新审视：三端出现第一份「无法用数据表达的契约」（如需要共享的交互状态机）时——那说明该部分不靠契约、应该靠规格或直接共享实现。

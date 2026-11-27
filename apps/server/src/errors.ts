@@ -1,6 +1,6 @@
 import { HTTPException } from 'hono/http-exception'
 import type { ErrorHandler } from 'hono'
-import { UpstreamError } from './sources/http.js'
+import { UpstreamError } from '@pterosaur/core/http'
 import { fail } from './http.js'
 
 /** 带明确状态码与**面向用户**文案的业务错误。 */

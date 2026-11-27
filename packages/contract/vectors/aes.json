@@ -1,0 +1,362 @@
+{
+  "schema": "pterosaur-vectors@1",
+  "vectors": [
+    {
+      "kind": "aes-128.ecb.encrypt",
+      "input": {
+        "key": "000102030405060708090a0b0c0d0e0f",
+        "plaintextHex": ""
+      },
+      "expected": "954f64f2e4e86e9eee82d20216684899",
+      "source": "FIPS 197 + PKCS#7"
+    },
+    {
+      "kind": "aes-128.ecb.encrypt",
+      "input": {
+        "key": "000102030405060708090a0b0c0d0e0f",
+        "plaintextHex": "61"
+      },
+      "expected": "fe123486508b0eb503a8468388ef5812",
+      "source": "FIPS 197 + PKCS#7"
+    },
+    {
+      "kind": "aes-128.ecb.encrypt",
+      "input": {
+        "key": "000102030405060708090a0b0c0d0e0f",
+        "plaintextHex": "68656c6c6f20776f726c64"
+      },
+      "expected": "9276fdf384f38518fa6c8310f191678d",
+      "source": "FIPS 197 + PKCS#7"
+    },
+    {
+      "kind": "aes-128.ecb.encrypt",
+      "input": {
+        "key": "000102030405060708090a0b0c0d0e0f",
+        "plaintextHex": "7878787878787878787878787878787878787878787878787878787878787878"
+      },
+      "expected": "1a673a4e5454398684fba0ee90c574ce1a673a4e5454398684fba0ee90c574ce954f64f2e4e86e9eee82d20216684899",
+      "source": "FIPS 197 + PKCS#7"
+    },
+    {
+      "kind": "aes-192.ecb.encrypt",
+      "input": {
+        "key": "000102030405060708090a0b0c0d0e0f1011121314151617",
+        "plaintextHex": ""
+      },
+      "expected": "3fe7286abde5f03943d5777020259626",
+      "source": "FIPS 197 + PKCS#7"
+    },
+    {
+      "kind": "aes-192.ecb.encrypt",
+      "input": {
+        "key": "000102030405060708090a0b0c0d0e0f1011121314151617",
+        "plaintextHex": "61"
+      },
+      "expected": "a9ac66478803de4358f38bc3da782990",
+      "source": "FIPS 197 + PKCS#7"
+    },
+    {
+      "kind": "aes-192.ecb.encrypt",
+      "input": {
+        "key": "000102030405060708090a0b0c0d0e0f1011121314151617",
+        "plaintextHex": "68656c6c6f20776f726c64"
+      },
+      "expected": "9de19f69673dcf74f2891ccecceb7c34",
+      "source": "FIPS 197 + PKCS#7"
+    },
+    {
+      "kind": "aes-192.ecb.encrypt",
+      "input": {
+        "key": "000102030405060708090a0b0c0d0e0f1011121314151617",
+        "plaintextHex": "7878787878787878787878787878787878787878787878787878787878787878"
+      },
+      "expected": "a280d0abc929268b993cff29fb5c467ba280d0abc929268b993cff29fb5c467b3fe7286abde5f03943d5777020259626",
+      "source": "FIPS 197 + PKCS#7"
+    },
+    {
+      "kind": "aes-256.ecb.encrypt",
+      "input": {
+        "key": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+        "plaintextHex": ""
+      },
+      "expected": "9f3b7504926f8bd36e3118e903a4cd4a",
+      "source": "FIPS 197 + PKCS#7"
+    },
+    {
+      "kind": "aes-256.ecb.encrypt",
+      "input": {
+        "key": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+        "plaintextHex": "61"
+      },
+      "expected": "9a75bcec03bcff27da6e4b587201c1ef",
+      "source": "FIPS 197 + PKCS#7"
+    },
+    {
+      "kind": "aes-256.ecb.encrypt",
+      "input": {
+        "key": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+        "plaintextHex": "68656c6c6f20776f726c64"
+      },
+      "expected": "af79df073287ee3f511d2556d54dce39",
+      "source": "FIPS 197 + PKCS#7"
+    },
+    {
+      "kind": "aes-256.ecb.encrypt",
+      "input": {
+        "key": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+        "plaintextHex": "7878787878787878787878787878787878787878787878787878787878787878"
+      },
+      "expected": "f43d5c74cf4530d3ea1df149e399eaddf43d5c74cf4530d3ea1df149e399eadd9f3b7504926f8bd36e3118e903a4cd4a",
+      "source": "FIPS 197 + PKCS#7"
+    },
+    {
+      "kind": "aes-128.cbc.encrypt",
+      "input": {
+        "key": "000102030405060708090a0b0c0d0e0f",
+        "iv": "0102030405060708090a0b0c0d0e0f10",
+        "plaintextHex": ""
+      },
+      "expected": "c7c88f12561976de76c48225bcbd3929",
+      "source": "NIST SP 800-38A + PKCS#7"
+    },
+    {
+      "kind": "aes-128.cbc.encrypt",
+      "input": {
+        "key": "000102030405060708090a0b0c0d0e0f",
+        "iv": "0102030405060708090a0b0c0d0e0f10",
+        "plaintextHex": "61"
+      },
+      "expected": "9f941e5a8f978f2b96e042b3af97cc9b",
+      "source": "NIST SP 800-38A + PKCS#7"
+    },
+    {
+      "kind": "aes-128.cbc.encrypt",
+      "input": {
+        "key": "000102030405060708090a0b0c0d0e0f",
+        "iv": "0102030405060708090a0b0c0d0e0f10",
+        "plaintextHex": "68656c6c6f20776f726c64"
+      },
+      "expected": "afeafca6c4be2700f24b018381372648",
+      "source": "NIST SP 800-38A + PKCS#7"
+    },
+    {
+      "kind": "aes-128.cbc.encrypt",
+      "input": {
+        "key": "000102030405060708090a0b0c0d0e0f",
+        "iv": "0102030405060708090a0b0c0d0e0f10",
+        "plaintextHex": "7878787878787878787878787878787878787878787878787878787878787878"
+      },
+      "expected": "c5198ceca5efa533f2536e48aa7d161cba29293a7c4f0ff43b9158ec2f45f3d2c2e2166b0ad82607c44090e9a1967ffc",
+      "source": "NIST SP 800-38A + PKCS#7"
+    },
+    {
+      "kind": "aes-192.cbc.encrypt",
+      "input": {
+        "key": "000102030405060708090a0b0c0d0e0f1011121314151617",
+        "iv": "0102030405060708090a0b0c0d0e0f10",
+        "plaintextHex": ""
+      },
+      "expected": "5abb33c1610e70f73550a05ad4d8f038",
+      "source": "NIST SP 800-38A + PKCS#7"
+    },
+    {
+      "kind": "aes-192.cbc.encrypt",
+      "input": {
+        "key": "000102030405060708090a0b0c0d0e0f1011121314151617",
+        "iv": "0102030405060708090a0b0c0d0e0f10",
+        "plaintextHex": "61"
+      },
+      "expected": "fe83e92200f544646f463d3ca8d2865a",
+      "source": "NIST SP 800-38A + PKCS#7"
+    },
+    {
+      "kind": "aes-192.cbc.encrypt",
+      "input": {
+        "key": "000102030405060708090a0b0c0d0e0f1011121314151617",
+        "iv": "0102030405060708090a0b0c0d0e0f10",
+        "plaintextHex": "68656c6c6f20776f726c64"
+      },
+      "expected": "5253375019387c61fc759bff0d49e80f",
+      "source": "NIST SP 800-38A + PKCS#7"
+    },
+    {
+      "kind": "aes-192.cbc.encrypt",
+      "input": {
+        "key": "000102030405060708090a0b0c0d0e0f1011121314151617",
+        "iv": "0102030405060708090a0b0c0d0e0f10",
+        "plaintextHex": "7878787878787878787878787878787878787878787878787878787878787878"
+      },
+      "expected": "504e0015a3442e78a03c85d11da9a45bab867b2260a21e556aff33280147fe28fcbddd5fa7a003cc71982b448d81a3a4",
+      "source": "NIST SP 800-38A + PKCS#7"
+    },
+    {
+      "kind": "aes-256.cbc.encrypt",
+      "input": {
+        "key": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+        "iv": "0102030405060708090a0b0c0d0e0f10",
+        "plaintextHex": ""
+      },
+      "expected": "c8c1e1df1e2df32abdf31592bda222dc",
+      "source": "NIST SP 800-38A + PKCS#7"
+    },
+    {
+      "kind": "aes-256.cbc.encrypt",
+      "input": {
+        "key": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+        "iv": "0102030405060708090a0b0c0d0e0f10",
+        "plaintextHex": "61"
+      },
+      "expected": "2c0371ec319af0d56190f2a6b8630b4e",
+      "source": "NIST SP 800-38A + PKCS#7"
+    },
+    {
+      "kind": "aes-256.cbc.encrypt",
+      "input": {
+        "key": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+        "iv": "0102030405060708090a0b0c0d0e0f10",
+        "plaintextHex": "68656c6c6f20776f726c64"
+      },
+      "expected": "3da9f6ce6faa3d4e47c4c5302a7fa687",
+      "source": "NIST SP 800-38A + PKCS#7"
+    },
+    {
+      "kind": "aes-256.cbc.encrypt",
+      "input": {
+        "key": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+        "iv": "0102030405060708090a0b0c0d0e0f10",
+        "plaintextHex": "7878787878787878787878787878787878787878787878787878787878787878"
+      },
+      "expected": "2f47e954003cbd1e4849a13e60dab92f3ef0ab74d75251927f1eaf8bdd52c6293976b41ad0aa1c28f4fc860796aa220d",
+      "source": "NIST SP 800-38A + PKCS#7"
+    },
+    {
+      "kind": "aes-128.cbc.decrypt",
+      "input": {
+        "key": "000102030405060708090a0b0c0d0e0f",
+        "iv": "0102030405060708090a0b0c0d0e0f10",
+        "ciphertextHex": "c7c88f12561976de76c48225bcbd3929"
+      },
+      "expected": "",
+      "source": "NIST SP 800-38A + PKCS#7"
+    },
+    {
+      "kind": "aes-128.cbc.decrypt",
+      "input": {
+        "key": "000102030405060708090a0b0c0d0e0f",
+        "iv": "0102030405060708090a0b0c0d0e0f10",
+        "ciphertextHex": "9f941e5a8f978f2b96e042b3af97cc9b"
+      },
+      "expected": "61",
+      "source": "NIST SP 800-38A + PKCS#7"
+    },
+    {
+      "kind": "aes-128.cbc.decrypt",
+      "input": {
+        "key": "000102030405060708090a0b0c0d0e0f",
+        "iv": "0102030405060708090a0b0c0d0e0f10",
+        "ciphertextHex": "afeafca6c4be2700f24b018381372648"
+      },
+      "expected": "68656c6c6f20776f726c64",
+      "source": "NIST SP 800-38A + PKCS#7"
+    },
+    {
+      "kind": "aes-128.cbc.decrypt",
+      "input": {
+        "key": "000102030405060708090a0b0c0d0e0f",
+        "iv": "0102030405060708090a0b0c0d0e0f10",
+        "ciphertextHex": "c5198ceca5efa533f2536e48aa7d161cba29293a7c4f0ff43b9158ec2f45f3d2c2e2166b0ad82607c44090e9a1967ffc"
+      },
+      "expected": "7878787878787878787878787878787878787878787878787878787878787878",
+      "source": "NIST SP 800-38A + PKCS#7"
+    },
+    {
+      "kind": "aes-192.cbc.decrypt",
+      "input": {
+        "key": "000102030405060708090a0b0c0d0e0f1011121314151617",
+        "iv": "0102030405060708090a0b0c0d0e0f10",
+        "ciphertextHex": "5abb33c1610e70f73550a05ad4d8f038"
+      },
+      "expected": "",
+      "source": "NIST SP 800-38A + PKCS#7"
+    },
+    {
+      "kind": "aes-192.cbc.decrypt",
+      "input": {
+        "key": "000102030405060708090a0b0c0d0e0f1011121314151617",
+        "iv": "0102030405060708090a0b0c0d0e0f10",
+        "ciphertextHex": "fe83e92200f544646f463d3ca8d2865a"
+      },
+      "expected": "61",
+      "source": "NIST SP 800-38A + PKCS#7"
+    },
+    {
+      "kind": "aes-192.cbc.decrypt",
+      "input": {
+        "key": "000102030405060708090a0b0c0d0e0f1011121314151617",
+        "iv": "0102030405060708090a0b0c0d0e0f10",
+        "ciphertextHex": "5253375019387c61fc759bff0d49e80f"
+      },
+      "expected": "68656c6c6f20776f726c64",
+      "source": "NIST SP 800-38A + PKCS#7"
+    },
+    {
+      "kind": "aes-192.cbc.decrypt",
+      "input": {
+        "key": "000102030405060708090a0b0c0d0e0f1011121314151617",
+        "iv": "0102030405060708090a0b0c0d0e0f10",
+        "ciphertextHex": "504e0015a3442e78a03c85d11da9a45bab867b2260a21e556aff33280147fe28fcbddd5fa7a003cc71982b448d81a3a4"
+      },
+      "expected": "7878787878787878787878787878787878787878787878787878787878787878",
+      "source": "NIST SP 800-38A + PKCS#7"
+    },
+    {
+      "kind": "aes-256.cbc.decrypt",
+      "input": {
+        "key": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+        "iv": "0102030405060708090a0b0c0d0e0f10",
+        "ciphertextHex": "c8c1e1df1e2df32abdf31592bda222dc"
+      },
+      "expected": "",
+      "source": "NIST SP 800-38A + PKCS#7"
+    },
+    {
+      "kind": "aes-256.cbc.decrypt",
+      "input": {
+        "key": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+        "iv": "0102030405060708090a0b0c0d0e0f10",
+        "ciphertextHex": "2c0371ec319af0d56190f2a6b8630b4e"
+      },
+      "expected": "61",
+      "source": "NIST SP 800-38A + PKCS#7"
+    },
+    {
+      "kind": "aes-256.cbc.decrypt",
+      "input": {
+        "key": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+        "iv": "0102030405060708090a0b0c0d0e0f10",
+        "ciphertextHex": "3da9f6ce6faa3d4e47c4c5302a7fa687"
+      },
+      "expected": "68656c6c6f20776f726c64",
+      "source": "NIST SP 800-38A + PKCS#7"
+    },
+    {
+      "kind": "aes-256.cbc.decrypt",
+      "input": {
+        "key": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+        "iv": "0102030405060708090a0b0c0d0e0f10",
+        "ciphertextHex": "2f47e954003cbd1e4849a13e60dab92f3ef0ab74d75251927f1eaf8bdd52c6293976b41ad0aa1c28f4fc860796aa220d"
+      },
+      "expected": "7878787878787878787878787878787878787878787878787878787878787878",
+      "source": "NIST SP 800-38A + PKCS#7"
+    },
+    {
+      "kind": "aes-128.ecb.decrypt",
+      "input": {
+        "key": "000102030405060708090a0b0c0d0e0f",
+        "ciphertextHex": "9276fdf384f38518fa6c8310f191678d"
+      },
+      "expected": "68656c6c6f20776f726c64",
+      "source": "FIPS 197 + PKCS#7"
+    }
+  ]
+}

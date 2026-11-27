@@ -20,9 +20,11 @@
  * - 全部 API 不抛异常：拿不到就给空身份，调用方降级即可。
  */
 
-/** 与 headless 浏览器上下文、Node 侧请求共用的 UA（实验验证通过的组合）。 */
-export const NETEASE_WEB_UA =
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36 Edg/156.0.0.0'
+import type { NeteaseDeviceIdentity } from '@pterosaur/core'
+import { NETEASE_WEB_UA } from '@pterosaur/core/netease'
+
+// 身份类型由协议内核定义；取到的身份经 sources/host.ts 以端口形式交给内核。
+export type { NeteaseDeviceIdentity }
 
 /** NEFingerprint 的 appId（网易云网页登录专用，官方登录 bundle 写死）。 */
 const FP_APP_ID = '9d0ef7e0905d422cba1ecf7e73d77e67'
@@ -47,16 +49,6 @@ const DEVICE_COOKIE_ALLOWLIST = new Set([
   'ntes_utid',
   'HMACCOUNT',
 ])
-
-/** 一套借来的设备身份。`token` 为空串表示降级（headless 不可用或尚未就绪）。 */
-export interface NeteaseDeviceIdentity {
-  /** `ydDeviceToken`——NEFingerprint 的 32 字符 token；降级时空串。 */
-  token: string
-  /** 白名单 cookie 拼好的请求头值（`k=v; k=v`）；降级时空串。 */
-  cookieHeader: string
-  /** 真实设备 id（chainId 用）；可能缺省。 */
-  sDeviceId?: string
-}
 
 /** 缓存有效期：官方 SDK 24h 上报一次，提前 4h 失效。 */
 const IDENTITY_TTL_MS = 20 * 60 * 60 * 1000

@@ -1,7 +1,7 @@
 import type { Context } from 'hono'
 import type { MusicSource } from '@pterosaur/shared/types'
-import { adapterOf } from './index.js'
-import type { SourceAdapter } from './types.js'
+import { adapterOf } from '@pterosaur/core'
+import type { SourceAdapter } from '@pterosaur/core'
 import {
   cacheKey,
   cached,

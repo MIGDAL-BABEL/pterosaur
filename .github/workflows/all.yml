@@ -1,0 +1,138 @@
+name: Pterosaur CI
+
+# 路径过滤用 dorny/paths-filter（`head_commit.modified` 只在 push 事件存在、
+# 且只看最后一次提交，对 pull_request 完全无效）。
+# 契约或 shared/core 变更时三端全跑（ADR-066）。
+
+on:
+  push:
+    branches: [main, 'feat/**', 'fix/**', 'chore/**']
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      web: ${{ steps.filter.outputs.web }}
+      contract: ${{ steps.filter.outputs.contract }}
+      macos: ${{ steps.filter.outputs.macos }}
+      android: ${{ steps.filter.outputs.android }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            web:
+              - 'apps/web/**'
+              - 'apps/server/**'
+              - 'packages/shared/**'
+              - 'packages/core/**'
+              - 'packages/contract/**'
+              - 'package.json'
+              - 'pnpm-lock.yaml'
+              - 'pnpm-workspace.yaml'
+              - 'vite.config.ts'
+              - 'vitest.config.ts'
+              - 'tsconfig*.json'
+              - '.github/workflows/**'
+            contract:
+              - 'packages/contract/**'
+              - 'packages/core/**'
+              - 'packages/shared/**'
+            macos:
+              - 'apps/macos/**'
+            android:
+              - 'apps/android/**'
+
+  # ============================ Web / server / shared / contract ============================
+  web:
+    needs: [changes]
+    if: needs.changes.outputs.web == 'true' || needs.changes.outputs.contract == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24 }
+      # 依赖用 pnpm（版本与 lockfile 的 specifier 一致），vp 只用 npm 全局包跑 fmt/lint/test。
+      # 走过弯路：vp 的安装脚本与 supply-chain 校验在 CI 冷启动时不可靠。
+      - uses: pnpm/action-setup@v4
+        with: { version: 12.8.1 }
+      - name: Install vp
+        run: npm install -g vite-plus
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - run: npx --yes vite-plus check
+      - run: npx --yes vite-plus test run
+      - name: Build server
+        run: pnpm --filter @pterosaur/server build
+      - name: Build web
+        run: pnpm --filter @pterosaur/web build
+
+  # ============================ 契约：生成器确定 + 参考实现自检 ============================
+  contract:
+    needs: [changes, web]
+    if: needs.changes.outputs.contract == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24 }
+      - uses: pnpm/action-setup@v4
+        with: { version: 12.8.1 }
+      - run: pnpm install --frozen-lockfile
+      # 生成器必须确定：重跑后工作区没有 diff
+      - run: pnpm --filter @pterosaur/contract regen:capabilities
+      - run: pnpm --filter @pterosaur/contract regen:vectors
+      - run: pnpm --filter @pterosaur/contract regen:golden
+      - run: git diff --exit-code -- packages/contract
+      - run: pnpm --filter @pterosaur/contract test
+
+  # ============================ macOS / Swift ============================
+  macos:
+    needs: [changes]
+    if: needs.changes.outputs.macos == 'true' || needs.changes.outputs.contract == 'true'
+    runs-on: macos-15
+    defaults:
+      run:
+        working-directory: apps/macos
+    env:
+      PTEROSAUR_CONTRACT: ${{ github.workspace }}/packages/contract
+    steps:
+      - uses: actions/checkout@v4
+      - run: swift --version
+      # 自测跑在 `selftest` 可执行 target 上（契约向量 / 黄金快照 / 假网络用例），不用 XCTest。
+      - name: Self test
+        run: |
+          set -o pipefail
+          swift run selftest 2>&1 | tee /tmp/swift-test.log
+      # 外壳依赖 SwiftUI 宏，必须经 Xcode 工具链构建（命令行工具链不提供该宏）；契约变更时也要能编过。
+      - name: Build app
+        run: |
+          set -o pipefail
+          swift build --product Pterosaur 2>&1 | tee /tmp/swift-build.log
+      - if: failure()
+        run: |
+          tail -60 /tmp/swift-test.log /tmp/swift-build.log 2>/dev/null | while IFS= read -r l; do echo "::error::$l"; done
+
+  # ============================ Android / Kotlin ============================
+  android:
+    needs: [changes]
+    if: needs.changes.outputs.android == 'true' || needs.changes.outputs.contract == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/android
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: 'temurin', java-version: '21' }
+      - uses: gradle/actions/setup-gradle@v4
+        with: { gradle-version: '8.11.1' }
+      - run: gradle :core:test
+      - run: gradle :app:assembleDebug

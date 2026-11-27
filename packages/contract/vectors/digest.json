@@ -1,0 +1,143 @@
+{
+  "schema": "pterosaur-vectors@1",
+  "vectors": [
+    {
+      "kind": "md5.hex",
+      "input": "",
+      "expected": "d41d8cd98f00b204e9800998ecf8427e",
+      "source": "RFC 1321"
+    },
+    {
+      "kind": "md5.hex",
+      "input": "abc",
+      "expected": "900150983cd24fb0d6963f7d28e17f72",
+      "source": "RFC 1321"
+    },
+    {
+      "kind": "md5.hex",
+      "input": "中文 é ü",
+      "expected": "f57e857b430b12426e6b65e3e7739708",
+      "source": "RFC 1321"
+    },
+    {
+      "kind": "md5.hex",
+      "input": "😀🎵",
+      "expected": "ec91803dd7cabde78f4d68301e39be97",
+      "source": "RFC 1321"
+    },
+    {
+      "kind": "md5.hex",
+      "input": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "expected": "3b0c8ac703f828b04c6c197006d17218",
+      "source": "RFC 1321"
+    },
+    {
+      "kind": "md5.hex",
+      "input": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "expected": "398533d48111e9f664b1f64cb10c4b63",
+      "source": "RFC 1321"
+    },
+    {
+      "kind": "sha1.hex",
+      "input": "",
+      "expected": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+      "source": "FIPS 180-4"
+    },
+    {
+      "kind": "sha1.hex",
+      "input": "abc",
+      "expected": "a9993e364706816aba3e25717850c26c9cd0d89d",
+      "source": "FIPS 180-4"
+    },
+    {
+      "kind": "sha1.hex",
+      "input": "中文 é ü",
+      "expected": "e4fd7ebc7967703bca964bcf8cf33acf44ef7d47",
+      "source": "FIPS 180-4"
+    },
+    {
+      "kind": "sha1.hex",
+      "input": "😀🎵",
+      "expected": "967f8373b3bf5c221f8ad6d0219db8d073b060cd",
+      "source": "FIPS 180-4"
+    },
+    {
+      "kind": "sha1.hex",
+      "input": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "expected": "c2db330f6083854c99d4b5bfb6e8f29f201be699",
+      "source": "FIPS 180-4"
+    },
+    {
+      "kind": "sha1.hex",
+      "input": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "expected": "c3efa690fa3fdd2e2526853eed670538ea127638",
+      "source": "FIPS 180-4"
+    },
+    {
+      "kind": "sha256.hex",
+      "input": "",
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source": "FIPS 180-4"
+    },
+    {
+      "kind": "sha256.hex",
+      "input": "abc",
+      "expected": "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad",
+      "source": "FIPS 180-4"
+    },
+    {
+      "kind": "sha256.hex",
+      "input": "中文 é ü",
+      "expected": "f77d586979cee1e49e50d396c018a826a90a21688cdd8b3f6aeea444ca197057",
+      "source": "FIPS 180-4"
+    },
+    {
+      "kind": "sha256.hex",
+      "input": "😀🎵",
+      "expected": "3160c517444818191e182819313671b11fad6f72c63c5ed0cf8f726344c6617d",
+      "source": "FIPS 180-4"
+    },
+    {
+      "kind": "sha256.hex",
+      "input": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "expected": "b35439a4ac6f0948b6d6f9e3c6af0f5f590ce20f1bde7090ef7970686ec6738a",
+      "source": "FIPS 180-4"
+    },
+    {
+      "kind": "sha256.hex",
+      "input": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "expected": "44f8354494a5ba03ba1792a8d3e9c534c47a9181980fde7a3f44b06ef2ae7c7f",
+      "source": "FIPS 180-4"
+    },
+    {
+      "kind": "pbkdf2.sha256",
+      "input": {
+        "password": "secret",
+        "salt": "salt",
+        "iterations": 1
+      },
+      "expected": "38df428b309308e48c3687e7f90bda0e9cf253568c21ec754a0e076ab4ab6423",
+      "source": "RFC 8018"
+    },
+    {
+      "kind": "pbkdf2.sha256",
+      "input": {
+        "password": "secret",
+        "salt": "salt",
+        "iterations": 2
+      },
+      "expected": "f92f45f9df4c2aeabae1ed3c16f7b64660c1f8e377fa9b4699b23c2c3a29f569",
+      "source": "RFC 8018"
+    },
+    {
+      "kind": "pbkdf2.sha256",
+      "input": {
+        "password": "secret",
+        "salt": "salt",
+        "iterations": 1000
+      },
+      "expected": "a8df899f3c4f204d967e0ad63c092987c10055ebb017b3d9d28add218d4f7aad",
+      "source": "RFC 8018"
+    }
+  ]
+}
