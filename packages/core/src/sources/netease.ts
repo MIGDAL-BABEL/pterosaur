@@ -20,7 +20,25 @@ import {
   replaceQuery,
   splitUrl,
 } from '@pterosaur/shared/url'
-import { corePorts, type NcmResponse } from '../ports.js'
+import { corePorts } from '../ports.js'
+import {
+  album as ncmAlbum,
+  albumNewest,
+  artistAlbum,
+  artists,
+  cloudsearch,
+  loginStatus as ncmLoginStatus,
+  lyricNew,
+  personalized,
+  personalizedNewsong,
+  playlistCatlist,
+  playlistDetail,
+  songDetail as ncmSongDetail,
+  songUrlV1,
+  topPlaylist,
+  toplist as ncmToplist,
+  userPlaylist,
+} from './neteaseApi.js'
 import type { SourceAdapter } from './types.js'
 import {
   codecName,
@@ -30,19 +48,11 @@ import {
   toHttps,
 } from './http.js'
 
-/**
- * 网易云内容接口（搜索 / 详情 / 取流 / 歌词等）目前仍走第三方库 `NeteaseCloudMusicApi`——
- * 经宿主的过渡端口调用（见 `ports.ts` 的 `ncmApi`），内核自身不加载任何 Node 模块。
- * 库以 CommonJS 导出、键名即函数名，返回 `{ status, body, cookie? }`；其中 `cookie` 是
- * 「原始 Set-Cookie 字符串数组」，登录成功后原样作为 `Set-Cookie` 头下发给浏览器，
- * 浏览器在后续请求自动回传，再透传给网易云即可维持会话。
+/*
+ * 网易云内容接口一律走内核自实现的 `neteaseApi.ts`（签名、加密、请求头都在内核里，ADR-065），
+ * 不再经任何第三方库或宿主端口。接口返回形状与库一致（`{ body, cookie }`），
+ * `cookie` 是「原始 Set-Cookie 字符串数组」，登录成功后原样作为 `Set-Cookie` 头下发给浏览器。
  */
-function ncm(
-  name: string,
-  params: Record<string, unknown>,
-): Promise<NcmResponse> {
-  return corePorts().ncmApi.call(name, params)
-}
 
 /** 设备身份端口（ADR-052）：怎么取身份是宿主的事，内核只在扫码登录时消费。 */
 const deviceIdentity = () => corePorts().neteaseDevice
@@ -281,7 +291,7 @@ export async function searchSongs(
   cookie?: string,
   page = 1,
 ): Promise<Track[]> {
-  const res = await ncm('cloudsearch', {
+  const res = await cloudsearch({
     keywords,
     limit,
     offset: offsetOf(page, limit),
@@ -298,7 +308,7 @@ export async function searchArtists(
   cookie?: string,
   page = 1,
 ): Promise<Artist[]> {
-  const res = await ncm('cloudsearch', {
+  const res = await cloudsearch({
     keywords,
     type: 100,
     limit,
@@ -316,7 +326,7 @@ export async function searchAlbums(
   cookie?: string,
   page = 1,
 ): Promise<Album[]> {
-  const res = await ncm('cloudsearch', {
+  const res = await cloudsearch({
     keywords,
     type: 10,
     limit,
@@ -334,7 +344,7 @@ export async function searchPlaylists(
   cookie?: string,
   page = 1,
 ): Promise<Playlist[]> {
-  const res = await ncm('cloudsearch', {
+  const res = await cloudsearch({
     keywords,
     type: 1000,
     limit,
@@ -350,14 +360,14 @@ export async function recommendPlaylists(
   limit = 12,
   cookie?: string,
 ): Promise<Playlist[]> {
-  const res = await ncm('personalized', { limit, cookie })
+  const res = await personalized({ limit, cookie })
   const list: RawPlaylist[] = res?.body?.result ?? []
   return list.map(normalizePlaylist)
 }
 
 /** 排行榜列表。 */
 export async function toplists(): Promise<Playlist[]> {
-  const res = await ncm('toplist', {})
+  const res = await ncmToplist({})
   const list: RawPlaylist[] = res?.body?.list ?? []
   return list.map((raw) => ({
     ...normalizePlaylist(raw),
@@ -379,7 +389,7 @@ const HOT_PLAYLIST_ID = '3778678'
  * 曲目结构与歌单详情相同（标准 `RawSong`），复用同一套归一化。
  */
 export async function hotSongs(limit = 24): Promise<Track[]> {
-  const res = await ncm('playlist_detail', { id: HOT_PLAYLIST_ID, s: 8 })
+  const res = await playlistDetail({ id: HOT_PLAYLIST_ID, s: 8 })
   const list: RawSong[] = res?.body?.playlist?.tracks ?? []
   return list
     .filter((s) => !!s && s.id != null)
@@ -398,7 +408,7 @@ export async function topPlaylists(
   cat = '全部',
   page = 1,
 ): Promise<Playlist[]> {
-  const res = await ncm('top_playlist', {
+  const res = await topPlaylist({
     limit,
     cat,
     offset: offsetOf(page, limit),
@@ -414,7 +424,7 @@ export async function topPlaylists(
  * 少数条目 `song` 缺失，直接跳过（没有 `id` 就无法播放）。
  */
 export async function newSongs(limit = 20, cookie?: string): Promise<Track[]> {
-  const res = await ncm('personalized_newsong', { limit, cookie })
+  const res = await personalizedNewsong({ limit, cookie })
   const list: { song?: RawSong }[] = res?.body?.result ?? []
   return list
     .map((it) => it.song)
@@ -430,7 +440,7 @@ export async function newSongs(limit = 20, cookie?: string): Promise<Track[]> {
  * 本应用里取到歌单的标签（`topPlaylists(cat)` 接受的就是标签名）。
  */
 export async function playlistCategories(): Promise<PlaylistCategoryGroup[]> {
-  const res = await ncm('playlist_catlist', {})
+  const res = await playlistCatlist({})
   const body = res?.body as
     | {
         categories?: Record<string, string>
@@ -448,7 +458,7 @@ export async function playlistCategories(): Promise<PlaylistCategoryGroup[]> {
 }
 /** 「本周新发行」：最近发布的专辑（`album_newest`，上游固定回 12 条）。 */
 export async function newAlbums(limit = 12): Promise<Album[]> {
-  const res = await ncm('album_newest', {})
+  const res = await albumNewest({})
   const list: RawAlbum[] = res?.body?.albums ?? []
   return list.slice(0, limit).map(normalizeAlbum)
 }
@@ -458,7 +468,7 @@ export async function playlistTracks(
   id: string,
   cookie?: string,
 ): Promise<{ playlist: Playlist; tracks: Track[] }> {
-  const res = await ncm('playlist_detail', { id, cookie })
+  const res = await playlistDetail({ id, cookie })
   const pl = res?.body?.playlist
   const playlist: Playlist = pl
     ? {
@@ -530,7 +540,7 @@ async function fetchArtistAlbums(
   cookie?: string,
 ): Promise<RawAlbum[]> {
   const all = await collectAlbumPages(async (offset) => {
-    const res = await ncm('artist_album', {
+    const res = await artistAlbum({
       id,
       limit: ARTIST_ALBUM_PAGE,
       offset,
@@ -558,7 +568,7 @@ export async function artistDetail(
   cookie?: string,
 ): Promise<{ artist: Artist; tracks: Track[]; albums: Album[] }> {
   const [info, rawAlbums] = await Promise.all([
-    ncm('artists', { id, cookie }),
+    artists({ id, cookie }),
     fetchArtistAlbums(id, cookie),
   ])
   const artist = normalizeArtist(
@@ -575,7 +585,7 @@ export async function albumDetail(
   id: string,
   cookie?: string,
 ): Promise<{ album: Album; tracks: Track[] }> {
-  const res = await ncm('album', { id, cookie })
+  const res = await ncmAlbum({ id, cookie })
   const raw = (res?.body?.album ?? { id, name: '未知专辑' }) as RawAlbum & {
     size?: number
   }
@@ -622,7 +632,7 @@ async function resolveAudio(
   level: AudioLevel,
 ): Promise<ResolvedAudio> {
   try {
-    const res = await ncm('song_url_v1', { id, level, cookie })
+    const res = await songUrlV1({ id, level, cookie })
     const d = res?.body?.data?.[0]
     if (!d?.url) return {}
     return {
@@ -658,7 +668,7 @@ export async function songDetail(
   ids: string[],
   cookie?: string,
 ): Promise<Track[]> {
-  const res = await ncm('song_detail', { ids: ids.join(','), cookie })
+  const res = await ncmSongDetail({ ids, cookie })
   const songs: RawSong[] = res?.body?.songs ?? []
   return songs.map(normalizeTrack)
 }
@@ -666,7 +676,7 @@ export async function songDetail(
 /** 获取歌词（含翻译）。 */
 export async function getLyric(id: string, cookie?: string): Promise<Lyric> {
   try {
-    const res = await ncm('lyric_new', { id, cookie })
+    const res = await lyricNew({ id, cookie })
     const lrc: string = res?.body?.lrc?.lyric ?? ''
     const tlyric: string | undefined = res?.body?.tlyric?.lyric
     return parseLrc(lrc, tlyric)
@@ -865,7 +875,7 @@ export function parseUserCookie(raw: string): string {
 export async function loginStatus(cookie?: string): Promise<LoginStatus> {
   if (!cookie) return { logged: false }
   try {
-    const res = await ncm('login_status', { cookie })
+    const res = await ncmLoginStatus({ cookie })
     const profile = res?.body?.data?.profile
     if (!profile) return { logged: false }
     return {
@@ -887,7 +897,7 @@ export async function userPlaylists(
   uid: string,
   cookie?: string,
 ): Promise<Playlist[]> {
-  const res = await ncm('user_playlist', { uid, cookie })
+  const res = await userPlaylist({ uid, cookie })
   const list: RawPlaylist[] = res?.body?.playlist ?? []
   return list.map(normalizePlaylist)
 }

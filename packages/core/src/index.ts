@@ -17,8 +17,6 @@ export type {
   HttpPort,
   HttpRequest,
   HttpResponse,
-  NcmApiPort,
-  NcmResponse,
   NeteaseDeviceIdentity,
   NeteaseDeviceIdentityPort,
   QrPort,

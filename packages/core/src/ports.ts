@@ -5,8 +5,7 @@
  * Node 或 WHATWG 的运行时 API（`fetch`、`AbortSignal`、`node:crypto`、`require`、`URLSearchParams` 等）。
  * 凡要用到这些能力的地方一律经由这里声明的端口，由宿主注入实现：
  *
- * - Node 宿主（`apps/server`）：全局 `fetch`、`node:crypto`、`qrcode`、playwright 设备身份，
- *   以及过渡期的 `NeteaseCloudMusicApi`；
+ * - Node 宿主（`apps/server`）：全局 `fetch`、`node:crypto`、`qrcode`、playwright 设备身份；
  * - QuickJS 宿主（C++ 终端版，ADR-067）：以 C / C++ 实现等价函数。
  *
  * 端口是运行时级单例（{@link configureCore}）：适配器本身是模块级单例、带模块级缓存，
@@ -91,28 +90,6 @@ export interface NeteaseDeviceIdentityPort {
   refresh(): void
 }
 
-/* ============================ 网易云第三方库（过渡） ============================ */
-
-/**
- * 网易云第三方库的调用端口——**过渡用**（ADR-065）。
- *
- * 适配器层抽离为内核时，先让 server 经此端口继续调用 `NeteaseCloudMusicApi`，保证行为不变；
- * 随后它承担的接口在内核内改为自实现签名请求，本端口随之删除。
- */
-export interface NcmApiPort {
-  /** 调用库的某函数（键名即库导出名，如 `cloudsearch`）。 */
-  call(name: string, params: Record<string, unknown>): Promise<NcmResponse>
-}
-
-/** 库的返回：`body` 为上游 JSON，`cookie` 是「原始 Set-Cookie 字符串数组」。 */
-export interface NcmResponse {
-  // 库的返回形状随版本漂移，适配器只能在使用处收敛；此处用 any 承接。
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  body: any
-  cookie?: string[]
-  status?: number
-}
-
 /* ============================ 端口注册 ============================ */
 
 export interface CorePorts {
@@ -120,7 +97,6 @@ export interface CorePorts {
   crypto: CryptoPort
   qrcode: QrPort
   neteaseDevice: NeteaseDeviceIdentityPort
-  ncmApi: NcmApiPort
 }
 
 let current: CorePorts | null = null

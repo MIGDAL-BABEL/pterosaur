@@ -31,8 +31,5 @@ export function nodeTestPorts(): CorePorts {
       invalidate: () => {},
       refresh: () => {},
     },
-    ncmApi: {
-      call: () => Promise.reject(new Error('单测未提供 NCM 库端口')),
-    },
   }
 }

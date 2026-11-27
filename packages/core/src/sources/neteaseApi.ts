@@ -17,6 +17,17 @@ import { encodeForm } from '@pterosaur/shared/url'
 import { eapiDecrypt, eapiEncrypt, weapiEncrypt } from './neteaseSign.js'
 import { base64, md5, utf8 } from '../services/crypto.js'
 
+/**
+ * 随机源：weapi 的会话密钥与 RSA 填充、请求头里的 requestId / deviceId 都用它。
+ * 取值为 [0, 1)，与 `Math.random` 同口径；单测可经 {@link setRandom} 换成固定序列。
+ */
+let random: () => number = Math.random
+
+/** 替换随机源（仅测试使用；`null` 还原为 `Math.random`）。 */
+export function setRandom(fn: (() => number) | null): void {
+  random = fn ?? Math.random
+}
+
 /** 接口域名（库的 `util/config.json`）：缺省 eapi 打 apiDomain，weapi 打 domain。 */
 const DOMAIN = 'https://music.163.com'
 const API_DOMAIN = 'https://interface.music.163.com'
@@ -56,8 +67,7 @@ function cookieToObject(cookie: string): Record<string, string> {
 const WNMCID = (() => {
   const letters = 'abcdefghijklmnopqrstuvwxyz'
   let s = ''
-  for (let i = 0; i < 6; i++)
-    s += letters.charAt(Math.floor(Math.random() * 26))
+  for (let i = 0; i < 6; i++) s += letters.charAt(Math.floor(random() * 26))
   return `${s}.${Date.now()}.01.0`
 })()
 
@@ -82,26 +92,52 @@ function requestCookie(callerCookie: string | undefined): {
   const cookies = callerCookie ? cookieToObject(callerCookie) : {}
   const hasUser = Boolean(cookies.MUSIC_U)
   const header: Record<string, string> = {
-    osver: 'Microsoft-Windows-10-Professional-build-19045-64bit',
+    osver:
+      cookies.osver ?? 'Microsoft-Windows-10-Professional-build-19045-64bit',
     deviceId: cookies.deviceId ?? '',
-    os: 'pc',
-    appver: '3.1.17.204416',
-    versioncode: '140',
-    mobilename: '',
-    buildver: String(Date.now()).slice(0, 10),
-    resolution: '1920x1080',
+    os: cookies.os ?? 'pc',
+    appver: cookies.appver ?? '3.1.17.204416',
+    versioncode: cookies.versioncode ?? '140',
+    mobilename: cookies.mobilename ?? '',
+    buildver: cookies.buildver ?? String(Date.now()).slice(0, 10),
+    resolution: cookies.resolution ?? '1920x1080',
     __csrf: cookies.__csrf ?? '',
-    channel: 'netease',
-    requestId: `${Date.now()}_${String(Math.floor(Math.random() * 1000)).padStart(4, '0')}`,
+    channel: cookies.channel ?? 'netease',
+    requestId: `${Date.now()}_${String(Math.floor(random() * 1000)).padStart(4, '0')}`,
   }
   if (hasUser) header.MUSIC_U = cookies.MUSIC_U!
   // 已登录时若也带了 MUSIC_A，一并透传；匿名时用匿名 token 兜底
   if (cookies.MUSIC_A) header.MUSIC_A = cookies.MUSIC_A
   else if (!hasUser) header.MUSIC_A = anonymousToken() || ''
-  if (cookies.WNMCID) header.WNMCID = cookies.WNMCID
-  else header.WNMCID = WNMCID
   if (!header.MUSIC_A) delete header.MUSIC_A
-  return { header, cookieObject: cookies }
+
+  // 与库的 `processCookieObject` 对齐：除 header 字段外，**Cookie 头**还带一组设备与统计字段。
+  // 匿名请求缺少 `_ntes_nnid` / `NMTID` 时，上游对部分接口（歌手、专辑等）返回空体，
+  // 对取流则回 `-460`（网络环境风险）。
+  const nuid = cookies._ntes_nuid ?? randomHex32()
+  const cookieObject: Record<string, string> = {
+    ...cookies,
+    __remember_me: 'true',
+    ntes_kaola_ad: '1',
+    _ntes_nuid: nuid,
+    _ntes_nnid: cookies._ntes_nnid ?? `${nuid},${Date.now()}`,
+    WNMCID: cookies.WNMCID ?? WNMCID,
+    WEVNSM: cookies.WEVNSM ?? '1.0.0',
+    osver: header.osver!,
+    deviceId: header.deviceId!,
+    os: header.os!,
+    channel: header.channel!,
+    appver: header.appver!,
+  }
+  delete cookieObject.MUSIC_U
+  delete cookieObject.MUSIC_A
+  // NMTID：与库一致，每次请求换一个新的 32 位十六进制（登录相关路径除外）
+  cookieObject.NMTID = randomHex32()
+  if (cookies.MUSIC_U) cookieObject.MUSIC_U = cookies.MUSIC_U
+  if (cookies.MUSIC_A) cookieObject.MUSIC_A = cookies.MUSIC_A
+  else if (!hasUser) cookieObject.MUSIC_A = anonymousToken() || ''
+  if (!cookieObject.MUSIC_A) delete cookieObject.MUSIC_A
+  return { header, cookieObject }
 }
 
 /** 把键值对象编码为 Cookie 头（键与值都按 `encodeURIComponent` 编码，同库）。 */
@@ -125,7 +161,7 @@ async function request(
   data: Record<string, unknown>,
   options: { cookie?: string; crypto: Crypto },
 ): Promise<NcmResult> {
-  const { header } = requestCookie(options.cookie)
+  const { header, cookieObject } = requestCookie(options.cookie)
   const payload: Record<string, unknown> = { ...data, e_r: ENCRYPT_RESPONSE }
   let url: string
   let form: Record<string, string>
@@ -133,7 +169,7 @@ async function request(
   if (options.crypto === 'weapi') {
     payload.csrf_token = header.__csrf ?? ''
     url = `${DOMAIN}/weapi/${path.slice(5)}`
-    form = weapiEncrypt(payload, Math.random)
+    form = weapiEncrypt(payload, random)
     userAgent = WEAPI_UA
   } else {
     payload.header = header
@@ -149,7 +185,7 @@ async function request(
       Referer: DOMAIN,
       ...(options.crypto === 'weapi'
         ? {}
-        : { Cookie: encodeCookieHeader(header) }),
+        : { Cookie: encodeCookieHeader(cookieObject) }),
     },
     body: encodeForm(form),
     timeoutMs: 15_000,
@@ -422,12 +458,19 @@ export async function registerAnonymous(): Promise<string> {
   return ''
 }
 
+/** 32 位小写十六进制随机串（库用 CryptoJS `WordArray.random(16).toString()`）。 */
+function randomHex32(): string {
+  const hex = '0123456789abcdef'
+  let out = ''
+  for (let i = 0; i < 32; i++) out += hex.charAt(Math.floor(random() * 16))
+  return out
+}
+
 /** 设备 id：52 个大写十六进制字符（库的 `generateDeviceId`）。 */
 function randomDeviceId(): string {
   const chars = '0123456789ABCDEF'
   let out = ''
-  for (let i = 0; i < 52; i++)
-    out += chars.charAt(Math.floor(Math.random() * 16))
+  for (let i = 0; i < 52; i++) out += chars.charAt(Math.floor(random() * 16))
   return out
 }
 
