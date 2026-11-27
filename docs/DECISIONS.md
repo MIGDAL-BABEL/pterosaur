@@ -1286,3 +1286,16 @@
   - 终端版的上游协议改动与 Web / server 共用同一份代码，但分发物要随内核重新构建。
   - 宿主侧的其余选型（音频输出与解码、HTTP 客户端、JSON 与密码库）不在本决策内。
 - 何时重新审视：QuickJS 的能力或性能不足以承载内核；或 OpenTUI 的 C API 变得不稳定、停止维护。
+
+## ADR-068：网易云接口在内核自实现——weapi 的会话密钥走裸 RSA
+
+- 日期：2026-11-27
+- 状态：已采纳
+- 背景（遇到了什么问题）：ADR-065 把 `NeteaseCloudMusicApi` 承担的 16 个接口迁入 `packages/core`。首版按 RFC 8017 给 weapi 的 `encSecKey` 实现 PKCS#1 v1.5 填充；本地对拍（params 解密、RSA 与 forge 的 raw 运算一致）全部通过，但**真实上游对 weapi 接口一律回 HTTP 200 + 空体**。逐层二分（把库的 AES 段换成 Node 原生、把库的 RSA 段换成我们的实现）定位到 `encSecKey`。
+- 决策：`encSecKey` 用**裸 RSA**——`c = m^e mod n`，消息字节直接当整数、左侧补零到模长、不做任何填充（`crypto/hash.ts` 的 `rsaRaw`）。`rsaEncryptPkcs1` 保留为通用原语，但不用于网易云。
+- 为什么是这个：库调用的是 `forge.pki.publicKeyFromPem(pem).encrypt(secretKey, 'NONE')`；forge 的 `encrypt` 中 `'NONE'` / `'RAW'` 映射为 `{ encode: (e) => e }`，即跳过编码。这是上游与第三方客户端之间的私有约定，不是标准实现。
+- 后果：
+  - 会话密钥**没有随机性**，同一 secret 的 `encSecKey` 逐字节确定——测试据此锁住行为（`neteaseSign.test.ts` 手算模幂对照）。
+  - 裸 RSA 缺少填充带来的「语义安全」不适用：secret 本身是每次请求随机的 16 字符。上游如此设计，照办即可。
+  - 同时对齐了 Cookie 头（库对所有加密方式都在 switch 之前设 `Cookie`）：缺 `_ntes_nnid` / `NMTID` 等字段时，eapi 取流回 `-460`。
+- 何时重新审视：上游改为校验 PKCS#1 填充，或迁移到新的加密方式时。
