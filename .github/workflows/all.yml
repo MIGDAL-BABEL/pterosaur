@@ -62,22 +62,26 @@ jobs:
         with: { node-version: 24 }
       # vp 会根据pnpm-workspace.yaml的allowBuilds等字段预处理 workspace 配置，
       # 再调用 pnpm install。先用 vp 自己的安装链接环（vp install），再 vp 管 fmt/lint/test。
+      # vp 的安装脚本在 GitHub Actions 里不把 binary 放进 PATH（实测 line 2: vp: command not found）。
+      # 改用 npm 全局包，binary 落在 setup-node 提供的全局 bin 目录，PATH 天然可见。
       - name: Install vp
-        run: |
-          curl -fsSL https://vite.plus | bash
-          ls -la ~/.local/bin ~/.vite-plus/bin 2>/dev/null || true
-          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
-          echo "$HOME/.vite-plus/bin" >> "$GITHUB_PATH"
+        run: npm install -g vite-plus
+      - run: vp --version
       - name: Install dependencies
         run: |
           set -o pipefail
           vp install 2>&1 | tee /tmp/vp-install.log
+          # vp 自带 pnpm fallback（本地即 ~/.local/vite-plus/data/fallback-bin/pnpm）
+          find "$HOME/.local/vite-plus" -name pnpm -type f 2>/dev/null | head -1 | xargs -r dirname >> "$GITHUB_PATH"
+          which pnpm || vp pnpm --version || true
       - if: failure()
         run: tail -40 /tmp/vp-install.log 2>/dev/null | while IFS= read -r l; do echo "::error::$l"; done
       - run: vp check
       - run: vp test run
-      - run: pnpm --filter @pterosaur/server build
-      - run: pnpm --filter @pterosaur/web build
+      - name: Build server
+        run: pnpm --filter @pterosaur/server build
+      - name: Build web
+        run: pnpm --filter @pterosaur/web build
 
   # ============================ 契约：生成器确定 + 参考实现自检 ============================
   contract:
@@ -89,11 +93,11 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: 24 }
       - name: Install vp
+        run: npm install -g vite-plus
+      - name: Install dependencies
         run: |
-          curl -fsSL https://vite.plus | bash
-          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
-          echo "$HOME/.vite-plus/bin" >> "$GITHUB_PATH"
-      - run: vp install
+          vp install
+          find "$HOME/.local/vite-plus" -name pnpm -type f 2>/dev/null | head -1 | xargs -r dirname >> "$GITHUB_PATH"
       # 生成器必须确定：重跑后工作区没有 diff
       - run: pnpm --filter @pterosaur/contract regen:capabilities
       - run: pnpm --filter @pterosaur/contract regen:vectors
